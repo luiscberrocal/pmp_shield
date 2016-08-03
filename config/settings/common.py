@@ -44,6 +44,7 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     # custom users app
     'pmp_shield.users.apps.UsersConfig',
+    'pmp_shield.employees',
     # Your stuff: custom apps go here
 )
 
@@ -220,7 +221,7 @@ ACCOUNT_ALLOW_REGISTRATION = False  # env.bool('DJANGO_ACCOUNT_ALLOW_REGISTRATIO
 # Select the correct user model
 AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = 'users:redirect'
-LOGIN_URL = 'account_login'
+LOGIN_URL = 'login'
 
 # SLUGLIFIER
 
@@ -333,3 +334,5 @@ LOGGING = {
     }
 }
 ########## END LOGGING CONFIGURATION
+
+HR_PHOTO_URL = 'http://10.1.92.213:18134/ords/vtmsapi/employee/%s/photo/'
