@@ -1,0 +1,322 @@
+﻿//start fonts
+@font-face {
+    font-family: "Belleza";
+    src: url("/static/fonts/Belleza-Regular.eot?") format("eot"), url("/static/fonts/Belleza-Regular.woff") format("woff"), url("/static/fonts/Belleza-Regular.ttf") format("truetype"), url("/static/fonts/Belleza-Regular.svg#Belleza-Regular") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'digital_dreamregular';
+    src: url('/static/fonts/DIGITALDREAM-webfont.eot');
+    src: url('/static/fonts/DIGITALDREAM-webfont.eot?#iefix') format('embedded-opentype'), url('/static/fonts/DIGITALDREAM-webfont.woff') format('woff'), url('/static/fonts/DIGITALDREAM-webfont.ttf') format('truetype'), url('/static/fonts/DIGITALDREAM-webfont.svg#digital_dreamregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+//end fonts
+
+
+//start variables
+
+@color-north-bound: color("#5163CC");
+@color-south-bound: color("#FF932A");
+@color-text-acp: color("#484F8C");
+@color-switch-menu: color("#008800");
+@color-time: color("#8C1C79");
+@color-tug: color("#654CDB");
+@color-text-modal: color("#f0ffff");
+@color-right-section: color("#6F7AD8");
+//end variables
+
+
+
+//start mixins
+.title-mixin() {
+    color: @color-text-modal;
+    font-size: large;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    min-height: 30px;
+    background-color: @color-text-acp;
+}
+
+.detail-containers-mixin() {
+    height: auto;
+    background-color: lighten(@color-text-acp, 55%);
+}
+
+//end mixins
+
+body {
+    .btn-primary {
+        background-color: @color-right-section;
+        border-color: darker(@color-right-section, 10%);
+
+        &:hover {
+            background-color: darker(@color-right-section, 20%);
+            border-color: darker(@color-right-section, 25%);
+        }
+    }
+
+    font-family: Belleza;
+    background-color: #f5f1f1;
+
+    .page-title {
+        background-color: white;
+        margin-bottom: 10px;
+
+
+        h1 {
+            color: @color-text-acp;
+        }
+    }
+
+    .lane-selection {
+        height: 25px;
+
+        .lane-title {
+            .title-mixin();
+            background-color: @color-right-section;
+        }
+
+        .lane-buttoms {
+            /*background: linear-gradient(to right bottom, #5db8c8 50%, forestgreen 50%);*/
+            margin-bottom: 10px;
+
+            .lane-buttom {
+                height: 30px;
+                font-size: x-large;
+                font-weight: bold;
+                color: @color-text-modal;
+                background-color: #a5a3a3;
+
+                a {
+                    color: lighten(@color-right-section, 20%);
+                }
+
+                &.east {
+
+                    &.active {
+                        background-color: #ffe37c;
+
+                        a {
+                            color: @color-right-section;
+                        }
+                    }
+
+                    &:hover {
+                        background-color: darken(#ffe37c, 15%);
+                    }
+                }
+
+                &.west {
+                    &.active {
+                        background-color: #499950;
+
+
+                        a {
+                            color: @color-right-section;
+                        }
+                    }
+
+                    &:hover {
+                        background-color: darken(#499950, 15%);
+                    }
+                }
+            }
+        }
+    }
+
+    .vessel-container {
+        background-color: #e3e6e1;
+        height: 550px;
+
+        .vessel-slot {
+            //  background-color: pink;
+            // height: 50px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            height: 550px;
+
+            .vessel-row {
+                margin-bottom: 5px;
+
+                .lockage-number {
+                    font-size: large;
+                    color: @color-text-modal;
+                    // height: 50px;
+                    &.north, &.N, &.n {
+                        background-color: @color-north-bound;
+                    }
+
+                    &.south, &.S, &.s {
+                        background-color: @color-south-bound;
+                    }
+                }
+
+                .vessel-schedule-number {
+                    //background-color: cadetblue;
+                    font-size: large;
+
+                    &.north, &.N, &.n {
+                        &:nth-child(odd) {
+                            background-color: lighten(@color-north-bound, 40%);
+                        }
+
+                        &:nth-child(even) {
+                            background-color: lighten(@color-north-bound, 30%);
+                        }
+
+                        &.active {
+                            box-shadow: inset 0 0 0 2px @color-north-bound;
+                        }
+
+                        &:hover {
+                            background-color: lighten(@color-north-bound, 15%);
+                        }
+                    }
+
+                    &.south, &.S, &.s {
+                        &:nth-child(odd) {
+                            background-color: lighten(@color-south-bound, 40%);
+                        }
+
+                        &:nth-child(even) {
+                            background-color: lighten(@color-south-bound, 30%);
+                        }
+
+                        &.active {
+                            box-shadow: inset 0 0 0 2px @color-south-bound;
+                        }
+
+                        &:hover {
+                            background-color: lighten(@color-south-bound, 15%);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .search-container {
+        background-color: forestgreen;
+        // height: 50px;
+        .search-title {
+            .title-mixin();
+            background-color: @color-right-section;
+        }
+    }
+
+    .right-container {
+        background-color: blue;
+        //height: 500px;
+        .category-container {
+            .detail-containers-mixin();
+            padding-right: 10px;
+            padding-left: 10px;
+
+            .category-title {
+                .title-mixin();
+            }
+
+            .category-detail {
+                background-color: lighten(@color-text-acp, 50%);
+                margin-top: 10px;
+                margin-bottom: 10px;
+                -webkit-box-shadow: 0 1px 2px #ccc;
+                box-shadow: 0 1px 2px #ccc;
+
+                .table-title {
+                    color: @color-text-acp;
+                }
+
+                .form-group {
+                    min-height: 50px;
+                    margin-bottom: 5px;
+                    padding-top: 5px;
+
+                    label {
+                        color: @color-text-acp;
+                    }
+                }
+            }
+
+            .transit-time-container {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+        }
+
+        .event-slot {
+            font-size: medium;
+            color: @color-text-modal;
+            overflow: hidden;
+            position: relative;
+            /*background: linear-gradient(to right bottom, pink 50%, blue 50%);*/
+            margin-right: 0px;
+            margin-left: 0px;
+
+            input[type="text"], textarea {
+                background-color: @color-right-section;
+                border: none;
+            }
+
+            #id_tie_up_end_time[type="text"] {
+                background-color: @color-text-acp;
+                border: none;
+            }
+
+            .event-time-title {
+                color: @color-text-acp;
+            }
+
+            .event-time-schedule {
+                background-color: @color-right-section;
+            }
+
+            .event-time-actual {
+                background-color: @color-text-acp;
+            }
+        }
+    }
+    //data tables classes
+    .table {
+        &.dataTable {
+            th {
+                color: @color-text-acp;
+            }
+        }
+    }
+
+    .dataTables_filter {
+        label {
+            color: @color-text-acp;
+        }
+    }
+
+    .code_cause {
+        min-height: 55px;
+    }
+
+    .incident-form {
+        label {
+            color: @color-text-acp;
+        }
+
+        .form-control {
+            margin-left: 10px;
+        }
+
+        textarea {
+            //  width: 300px;
+            height: 75px;
+        }
+
+        .form-group {
+            padding-right: 20px;
+            padding-left: 20px;
+        }
+    }
+}
