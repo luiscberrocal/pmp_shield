@@ -51,6 +51,11 @@ class TestACPEmployee(TestCase):
         self.assertEqual(1, Employee.objects.count())
         self.assertEqual(1, employee.phones.count())
 
+    def test_create_with_factory_batch(self):
+        EmployeeFactory.create_batch(10)
+        self.assertEqual(10, Employee.objects.count())
+
+
     def test_photo_load(self):
         employee = Employee.objects.create(**self.data)
         photo_name = '%s.jpg' % employee.username

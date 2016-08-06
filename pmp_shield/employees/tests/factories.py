@@ -1,6 +1,6 @@
 import string
 
-from factory import Iterator, lazy_attribute, post_generation
+from factory import Iterator, lazy_attribute, post_generation, LazyAttribute
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 from faker import Factory as FakerFactory
@@ -17,9 +17,9 @@ class EmployeeFactory(DjangoModelFactory):
 
     company_id = FuzzyText(length=6, chars=string.digits)
     office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
-    first_name = faker.first_name()
-    middle_name = faker.first_name()
-    last_name = faker.last_name()
+    first_name = LazyAttribute(lambda x: faker.first_name())
+    middle_name = LazyAttribute(lambda x: faker.first_name())
+    last_name = LazyAttribute(lambda x: faker.last_name())
 
     @lazy_attribute
     def username(self):
@@ -47,6 +47,6 @@ class PhoneFactory(DjangoModelFactory):
 
     class Meta:
         model = Phone
-    phone_number = faker.phone_number()
+    phone_number = faker.numerify('!##-####')
     phone_type = Iterator(Phone.PHONE_TYPES, getter= lambda c: c[0])
 
