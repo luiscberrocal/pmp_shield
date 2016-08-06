@@ -10,6 +10,7 @@ from django.db.utils import IntegrityError
 
 import logging
 
+from .factories import EmployeeFactory
 from ..models import OrganizationUnit, Phone, Employee
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,12 @@ class TestACPEmployee(TestCase):
     def test_create(self):
         employee = Employee.objects.create(**self.data)
         self.assertIsNotNone(employee.pk)
+
+    def test_create_with_factory(self):
+        employee = EmployeeFactory.create()
+        self.assertIsNotNone(employee.pk)
+        self.assertEqual(1, Employee.objects.count())
+        self.assertEqual(1, employee.phones.count())
 
     def test_photo_load(self):
         employee = Employee.objects.create(**self.data)
