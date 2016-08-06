@@ -249,7 +249,7 @@ ADMIN_URL = r'^admin/'
 
 LDAP_SERVERS = [
     {
-        'host': env('LDAP_HOST',default='<<LDAP_HOST>>'),
+        'host': env('LDAP_HOST'),
         'port': 389,
         'use_ssl': False,
     },
