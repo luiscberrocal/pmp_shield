@@ -1,8 +1,13 @@
+from datetime import timedelta
+from random import randint
+
 from factory import DjangoModelFactory, SubFactory, Sequence, post_generation, LazyAttribute
 from faker import Factory as FakeFactory
 
+from django.conf import settings
+from pytz import timezone
 
-from ..models import Project, Assumption
+from ..models import Project, Assumption, Restriction, Milestone
 from ...employees.tests.factories import EmployeeFactory
 
 faker = FakeFactory.create()
@@ -19,16 +24,16 @@ class BasicProjectFactory(DjangoModelFactory):
     scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
 
 
-class ProjectFactory(DjangoModelFactory):
+class ProjectFactory(BasicProjectFactory):
 
-    class Meta:
-        model = Project
-
-    name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
-    sponsor = SubFactory(EmployeeFactory)
-    project_manager = SubFactory(EmployeeFactory)
-    justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
-    scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
+    # class Meta:
+    #     model = Project
+    #
+    # name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
+    # sponsor = SubFactory(EmployeeFactory)
+    # project_manager = SubFactory(EmployeeFactory)
+    # justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
+    # scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
 
     @post_generation
     def assumptions(self, create, count, **kwargs):
@@ -53,14 +58,42 @@ class ProjectFactory(DjangoModelFactory):
             # Fiddle with django internals so self.product_set.all() works with build()
             self._prefetched_objects_cache = {'risks': risks}
 
-    # @classmethod
-    # def _create(cls, model_class, *args, **kwargs):
-    #     project = super()._create(model_class, *args, **kwargs)
-    #     AssumptionFactory.create_batch(4, project=project)
-    #     RiskFactory.create_batch(4, project=project)
-    #     return project
+    @post_generation
+    def restrictions(self, create, count, **kwargs):
+        if count is None:
+            count = 4
+        make_restriction = getattr(RestrictionFactory, 'create' if create else 'build')
+        restrictions = [make_restriction(project=self) for i in range(count)]
 
+        if not create:
+            # Fiddle with django internals so self.product_set.all() works with build()
+            self._prefetched_objects_cache = {'restrictions': restrictions}
 
+    @post_generation
+    def milestones(self, create, count, **kwargs):
+        if count is None:
+            count = 4
+        make_milestones = getattr(MilestoneFactory, 'create' if create else 'build')
+        milestones = list() #[make_milestones(project=self) for i in range(count)]
+        start_date = faker.date_time_between(start_date="now", end_date="1y",
+                                            tzinfo=timezone(settings.TIME_ZONE))
+        for i in range(count):
+            if i == 0:
+                milestone = make_milestones(project=self, milestone_type=Milestone.MILESTONE_START,
+                                            date=start_date)
+                start_date = start_date + timedelta(weeks=randint(2, 8))
+            elif i == count - 1:
+                milestone = make_milestones(project=self, milestone_type=Milestone.MILESTONE_END,
+                                            date=start_date)
+                start_date = start_date + timedelta(weeks=randint(2, 8))
+            else:
+                milestone = make_milestones(project=self, date=start_date)
+                start_date = start_date + timedelta(weeks=randint(2, 8))
+            milestones.append(milestone)
+
+        if not create:
+            # Fiddle with django internals so self.product_set.all() works with build()
+            self._prefetched_objects_cache = {'milestones': milestones}
 
 class AssumptionFactory(DjangoModelFactory):
 
@@ -70,4 +103,28 @@ class AssumptionFactory(DjangoModelFactory):
     name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
     description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     display_order = Sequence((lambda n: n))
+    project = SubFactory(BasicProjectFactory)
+
+
+class RestrictionFactory(DjangoModelFactory):
+
+    class Meta:
+        model = Restriction
+
+    name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
+    description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
+    display_order = Sequence((lambda n: n))
+    project = SubFactory(BasicProjectFactory)
+
+
+class MilestoneFactory(DjangoModelFactory):
+
+    class Meta:
+        model = Milestone
+
+    name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
+    description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
+    date = LazyAttribute(lambda x: faker.date_time_between(start_date="now", end_date="1y",
+                                                           tzinfo=timezone(settings.TIME_ZONE)))
+    milestone_type = Milestone.MILESTONE_OTHER
     project = SubFactory(BasicProjectFactory)
