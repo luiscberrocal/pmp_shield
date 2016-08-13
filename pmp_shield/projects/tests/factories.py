@@ -7,6 +7,18 @@ from ...employees.tests.factories import EmployeeFactory
 
 faker = FakeFactory.create()
 
+class BasicProjectFactory(DjangoModelFactory):
+
+    class Meta:
+        model = Project
+
+    name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
+    sponsor = SubFactory(EmployeeFactory)
+    project_manager = SubFactory(EmployeeFactory)
+    justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
+    scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
+
+
 class ProjectFactory(DjangoModelFactory):
 
     class Meta:
@@ -58,4 +70,4 @@ class AssumptionFactory(DjangoModelFactory):
     name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
     description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     display_order = Sequence((lambda n: n))
-    project = SubFactory(Project)
+    project = SubFactory(BasicProjectFactory)
