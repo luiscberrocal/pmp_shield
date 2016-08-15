@@ -16,14 +16,14 @@ class TestProject(TestCase):
         self.assertEqual(4, project.restrictions.count())
         self.assertEqual(4, project.milestones.count())
 
-    def test_date_range(self):
+    def test_start_end_dates(self):
         project = ProjectFactory.create()
-        start, end = project.date_range()
+        start, end = project.start_end_dates()
         self.assertTrue(end > start)
 
-    def test_date_range_no_end_milestone(self):
+    def test_start_end_dates_no_end_milestone(self):
         project = ProjectFactory.create(milestones=1)
-        start, end = project.date_range()
+        start, end = project.start_end_dates()
         self.assertIsNone(end)
         self.assertIsInstance(start, date)
 

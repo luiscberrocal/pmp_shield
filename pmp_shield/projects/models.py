@@ -14,7 +14,7 @@ class Project(TimeStampedModel):
     justification = models.TextField(_('Justification'))
     scope = models.TextField(_('Scope'))
 
-    def date_range(self):
+    def start_end_dates(self):
         milestones = self.milestones.filter(Q(milestone_type=Milestone.MILESTONE_START)|
                                        Q(milestone_type=Milestone.MILESTONE_END))
         if len(milestones) == 2 and (milestones[0].milestone_type == Milestone.MILESTONE_START or
@@ -24,7 +24,6 @@ class Project(TimeStampedModel):
             return milestones[0].date, None
         else:
             None
-
 
     def __str__(self):
         return self.name
