@@ -1,3 +1,5 @@
+from auditlog.models import AuditlogHistoryField
+from auditlog.registry import auditlog
 from django.db import models
 
 # Create your models here.
@@ -13,6 +15,7 @@ class Project(TimeStampedModel):
     project_manager = models.ForeignKey(Employee, verbose_name=('Project Manager'), related_name='managed_projects')
     justification = models.TextField(_('Justification'))
     scope = models.TextField(_('Scope'))
+    history = AuditlogHistoryField()
 
     def start_end_dates(self):
         milestones = self.milestones.filter(Q(milestone_type=Milestone.MILESTONE_START)|
@@ -34,6 +37,7 @@ class Assumption(TimeStampedModel):
     description = models.TextField(_('Description'))
     display_order = models.IntegerField(_('Diplay order'), default=1)
     project = models.ForeignKey(Project, verbose_name=_('Project'), related_name='assumptions')
+    history = AuditlogHistoryField()
 
     def __str__(self):
         return self.name
@@ -46,6 +50,7 @@ class Restriction(TimeStampedModel):
     description = models.TextField(_('Description'))
     display_order = models.IntegerField(_('Diplay order'), default=1)
     project = models.ForeignKey(Project, verbose_name=_('Project'), related_name='restrictions')
+    history = AuditlogHistoryField()
 
     def __str__(self):
         return self.name
@@ -69,9 +74,16 @@ class Milestone(TimeStampedModel):
     milestone_type = models.CharField(max_length=5, verbose_name=_('Milestone type'),
                                       choices=MILESTONE_TYPES, default=MILESTONE_OTHER)
 
+    history = AuditlogHistoryField()
 
     def __str__(self):
         return self.name
 
     class Meta:
         ordering = ('date',)
+
+
+auditlog.register(Project)
+auditlog.register(Assumption, exclude_fields=['display_order'])
+auditlog.register(Restriction, exclude_fields=['display_order'])
+auditlog.register(Milestone)

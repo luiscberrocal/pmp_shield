@@ -128,3 +128,15 @@ class MilestoneFactory(DjangoModelFactory):
                                                            tzinfo=timezone(settings.TIME_ZONE)))
     milestone_type = Milestone.MILESTONE_OTHER
     project = SubFactory(BasicProjectFactory)
+
+    @classmethod
+    def create_start_end_milestones(cls, start_date, end_date=None, weeks_of_duration=26):
+        if end_date is None:
+            end_date = start_date + timedelta(weeks=weeks_of_duration)
+
+        start_milestone = cls.create(date=start_date, milestone_type=Milestone.MILESTONE_START)
+        end_milestone = cls.create(date=end_date, milestone_type=Milestone.MILESTONE_END, project = start_milestone.project)
+        return start_milestone, end_milestone
+
+
+
