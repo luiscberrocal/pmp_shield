@@ -17,9 +17,10 @@ class Project(TimeStampedModel):
     def date_range(self):
         milestones = self.milestones.filter(Q(milestone_type=Milestone.MILESTONE_START)|
                                        Q(milestone_type=Milestone.MILESTONE_END))
-        if len(milestones) == 2:
+        if len(milestones) == 2 and (milestones[0].milestone_type == Milestone.MILESTONE_START or
+            milestones[1].milestone_type == Milestone.MILESTONE_END):
             return milestones[0].date, milestones[1].date
-        elif len(milestones) == 1:
+        elif len(milestones) == 1 and milestones[0].milestone_type == Milestone.MILESTONE_START:
             return milestones[0].date, None
         else:
             None
