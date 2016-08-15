@@ -1,11 +1,11 @@
-from datetime import date
+from datetime import date, timedelta
 
 from auditlog.models import LogEntry
 from django.test import TestCase
 
 from ...risks.models import Risk
 from ..models import Project, Assumption, Restriction, Milestone
-from .factories import ProjectFactory, RestrictionFactory
+from .factories import ProjectFactory, RestrictionFactory, MilestoneFactory
 
 
 class TestProject(TestCase):
@@ -21,7 +21,6 @@ class TestProject(TestCase):
         self.assertTrue(project.history.count() == 1, msg="There is one log entry")
 
         history = project.history.get()
-
         self.assertEqual(history.action, LogEntry.Action.CREATE, msg="Action is 'CREATE'")
 
     def test_update_name(self):
@@ -70,6 +69,49 @@ class TestRestriction(TestCase):
         self.assertEqual(1, Restriction.objects.count())
 
     def test_create(self):
-        RestrictionFactory.create()
+        restriction = RestrictionFactory.create()
         self.assertEqual(1, Restriction.objects.count())
+        self.assertTrue(restriction.history.count() == 1, msg="There is one log entry")
+
+        history = restriction.history.get()
+        self.assertEqual(history.action, LogEntry.Action.CREATE, msg="Action is 'CREATE'")
+
+    def test_update_name(self):
+        restriction = RestrictionFactory.create(name='Restriction 1')
+        restriction.name = 'Important restriction'
+        restriction.save()
+        self.assertEqual(2, restriction.history.count())
+
+    def test_update_display_order(self):
+        """
+        Display order is no included in history
+        """
+        restriction = RestrictionFactory.create(display_order=1)
+        restriction.display_order = 2
+        restriction.save()
+        self.assertEqual(1, restriction.history.count())
+
+
+class TestMilestone(TestCase):
+
+    def test_create_with_project_factory(self):
+        ProjectFactory.create(milestones=1)
+        self.assertEqual(1, Milestone.objects.count())
+
+    def test_create(self):
+        milestone = MilestoneFactory.create()
+        self.assertEqual(1, Milestone.objects.count())
+        self.assertTrue(milestone.history.count() == 1, msg="There is one log entry")
+
+    def test_update_expected_date(self):
+        start_date = date(2016, 1, 2)
+        start_ms, end_ms = MilestoneFactory.create_start_end_milestones(start_date)
+        self.assertTrue(start_ms.date < end_ms.date)
+        self.assertEqual(start_ms.project.pk, end_ms.project.pk)
+        end_ms.date = end_ms.date + timedelta(weeks=2)
+        end_ms.save()
+        self.assertEqual(2, end_ms.history.count())
+        self.assertEqual(1, start_ms.history.count())
+
+
 
