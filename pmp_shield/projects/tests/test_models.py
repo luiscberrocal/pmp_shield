@@ -1,4 +1,6 @@
 from datetime import date
+
+from auditlog.models import LogEntry
 from django.test import TestCase
 
 from ...risks.models import Risk
@@ -15,6 +17,31 @@ class TestProject(TestCase):
         self.assertEqual(4, project.risks.count())
         self.assertEqual(4, project.restrictions.count())
         self.assertEqual(4, project.milestones.count())
+
+        self.assertTrue(project.history.count() == 1, msg="There is one log entry")
+
+        history = project.history.get()
+
+        self.assertEqual(history.action, LogEntry.Action.CREATE, msg="Action is 'CREATE'")
+
+    def test_update_name(self):
+        project = ProjectFactory.create(name='Original name')
+        project.name = 'New name'
+        project.save()
+        self.assertTrue(project.history.count() == 2, msg="There are two log entry")
+        self.assertEqual('New name', project.history.first().changes_dict['name'][1])
+        self.assertJSONEqual('{"name": ["Original name", "New name"]}', project.history.first().changes)
+
+    def test_update_delete_assumption(self):
+        project = ProjectFactory.create()
+        first_assumption = project.assumptions.first()
+        history = first_assumption.history.latest()
+        first_assumption.delete()
+        self.assertEqual(3, project.assumptions.count())
+        self.assertEqual(1, LogEntry.objects.filter(content_type=history.content_type,
+                                                    object_pk=history.object_pk,
+                                                    action=LogEntry.Action.DELETE).count())
+
 
     def test_start_end_dates(self):
         project = ProjectFactory.create()
