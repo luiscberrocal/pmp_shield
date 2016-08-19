@@ -109,7 +109,7 @@ class LDAPTool(object):
         # end
         # first: build server pool from settings
         if LDAPTool.pool is None:
-            LDAPTool.pool = ServerPool(None, pool_strategy=FIRST, active=True, exhaust=True)
+            LDAPTool.pool = ServerPool(None, pool_strategy=FIRST, active=3, exhaust=True)
             for srv in settings.LDAP_SERVERS:
                 server = Server(srv['host'], srv['port'], srv['use_ssl'])
                 logger.debug("port added to pool:" + srv['host'])
@@ -124,7 +124,7 @@ class LDAPTool(object):
         try:
             con = Connection(LDAPTool.pool, auto_bind=True, client_strategy=SYNC, user=settings.LDAP_BIND_USER,
                              password=settings.LDAP_BIND_PWD, authentication=SIMPLE, check_names=True,
-                             raise_exceptions=True, lazy=True)
+                             raise_exceptions=True, lazy=True, receive_timeout=False)
             logger.debug("connection.result:" + str(con.result))
         except LDAPInvalidCredentialsResult as e:
             logger.error('%s %s ' % (str(e), settings.LDAP_BIND_USER))
