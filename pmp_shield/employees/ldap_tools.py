@@ -109,7 +109,7 @@ class LDAPTool(object):
         # end
         # first: build server pool from settings
         if LDAPTool.pool is None:
-            LDAPTool.pool = ServerPool(None, pool_strategy=FIRST, active=True, exhaust=True)
+            LDAPTool.pool = ServerPool(None, pool_strategy=FIRST, active=3, exhaust=True)
             for srv in settings.LDAP_SERVERS:
                 server = Server(srv['host'], srv['port'], srv['use_ssl'])
                 logger.debug("port added to pool:" + srv['host'])
