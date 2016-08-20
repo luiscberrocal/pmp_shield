@@ -7,7 +7,7 @@ from faker import Factory as FakeFactory
 from django.conf import settings
 from pytz import timezone
 
-from ..models import Project, Assumption, Restriction, Milestone
+from ..models import Project, Assumption, Restriction, Milestone, ProjectMembership
 from ...employees.tests.factories import EmployeeFactory
 
 faker = FakeFactory.create()
@@ -95,6 +95,19 @@ class ProjectFactory(BasicProjectFactory):
             # Fiddle with django internals so self.product_set.all() works with build()
             self._prefetched_objects_cache = {'milestones': milestones}
 
+    @post_generation
+    def members(self, create, count, **kwargs):
+        if count is None:
+            count = 3
+        make_member = getattr(ProjectMembershipFactory, 'create' if create else 'build')
+        members = [make_member(project=self) for i in range(count)]
+        leader=make_member(project=self, role=ProjectMembership.LEADER_ROLE)
+        members.append(leader)
+        if not create:
+            # Fiddle with django internals so self.product_set.all() works with build()
+            self._prefetched_objects_cache = {'members': members}
+
+
 class AssumptionFactory(DjangoModelFactory):
 
     class Meta:
@@ -139,4 +152,13 @@ class MilestoneFactory(DjangoModelFactory):
         return start_milestone, end_milestone
 
 
+
+class ProjectMembershipFactory(DjangoModelFactory):
+
+    class Meta:
+        model = ProjectMembership
+
+    member = SubFactory(EmployeeFactory)
+    project = SubFactory(BasicProjectFactory)
+    role = ProjectMembership.MEMBER_ROLE
 

@@ -38,3 +38,8 @@ class EmployeeManager(Manager):
                     pass
             return employee, created
 
+
+class UnitAssignmentManager(Manager):
+
+    def get_current_assignment(self, employee):
+        return self.get(employee=employee, end_date__isnull=True)

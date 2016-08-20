@@ -10,8 +10,8 @@ from django.db.utils import IntegrityError
 
 import logging
 
-from .factories import EmployeeFactory
-from ..models import OrganizationUnit, Phone, Employee
+from .factories import EmployeeFactory, UnitAssignmentFactory
+from ..models import OrganizationUnit, Phone, Employee, UnitAssignment
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,46 @@ class TestACPEmployee(TestCase):
         self.assertEqual('/media/photos/%s' % photo_name, employee.photo_url)
         self.assertTrue(os.path.exists(employee.photo.path))
         os.remove(employee.photo.path)
+
+    def test_assign_to_office(self):
+        office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
+
+        start_date = datetime.date(2016, 10, 1)
+        assignment = UnitAssignmentFactory.create(office=office, start_date=start_date)
+        new_assignment = assignment.employee.assign_to_office(new_office, start_date=datetime.date(2016, 12, 1))
+
+        self.assertEqual(new_office, new_assignment.office)
+        current_assignment = UnitAssignment.objects.get_current_assignment(employee=new_assignment.employee)
+        self.assertEqual(new_office, current_assignment.office)
+
+    def test_assign_to_office_wrong_start_date(self):
+        office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
+
+        start_date = datetime.date(2016, 10, 1)
+        assignment = UnitAssignmentFactory.create(office=office, start_date=start_date)
+        try:
+            new_assignment = assignment.employee.assign_to_office(new_office, start_date=datetime.date(2016, 9, 1))
+            self.fail('Should have sent an error')
+        except ValueError as e:
+            parts = str(e).split('.')
+            self.assertEqual('Cannot start an assignment before previous one started', parts[0])
+            self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01', parts[1].strip())
+            self.assertEqual('Current: Unidad de Soluciones de Servicios Marítimos y Operacionales (TINO-SS), start date: 2016-09-01', parts[2].strip())
+
+
+    def test_assign_to_office_no_previous_assignment(self):
+        employee = EmployeeFactory.create()
+        office = OrganizationUnit.objects.get(short_name='TINO-SS')
+
+        start_date = datetime.date(2016, 10, 1)
+        assignment = UnitAssignmentFactory.create(employee=employee, office=office, start_date=start_date)
+
+        self.assertEqual(office, assignment.office)
+        current_assignment = UnitAssignment.objects.get_current_assignment(employee=employee)
+        self.assertEqual(office, current_assignment.office)
+
 
 
     @mock.patch('requests.get')
@@ -177,3 +217,33 @@ class TestACPEmployee(TestCase):
         except IntegrityError as e:
             msg = str(e).split('\n')[0]
             self.assertEqual('null value in column "company_id" violates not-null constraint', msg)
+
+class TestUnitAssignment(TestCase):
+
+    def test_create(self):
+        assignment = UnitAssignmentFactory.create()
+        self.assertEqual(1, UnitAssignment.objects.count())
+
+    def test_get_current_assignment(self):
+        office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
+        last_office = OrganizationUnit.objects.get(short_name='OPT')
+
+        start_date = datetime.date(2016, 10, 1)
+        end_date = start_date + datetime.timedelta(days=180)
+        assignment = UnitAssignmentFactory.create(office=office, start_date=start_date, end_date=end_date)
+
+        start_date = end_date + datetime.timedelta(days=1)
+        end_date = start_date + datetime.timedelta(days=60)
+        UnitAssignmentFactory.create(office=new_office, employee=assignment.employee,
+                                     start_date=start_date, end_date= end_date)
+
+        start_date = end_date + datetime.timedelta(days=1)
+        UnitAssignmentFactory.create(office=last_office, employee=assignment.employee, start_date=start_date)
+
+        self.assertEqual(3, UnitAssignment.objects.filter(employee=assignment.employee).count())
+        self.assertEqual(last_office, UnitAssignment.objects.get_current_assignment(employee=assignment.employee).office)
+
+
+
+

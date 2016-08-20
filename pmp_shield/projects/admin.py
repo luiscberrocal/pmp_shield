@@ -26,4 +26,4 @@ admin.site.register(Assumption, AssumptionAdmin)
 admin.site.register(Restriction, RestrictionAdmin)
 admin.site.register(Milestone, MilestioneAdmin)
 
-admin.site.register(LogEntry, LogEntryAdmin)
+#admin.site.register(LogEntry, LogEntryAdmin)

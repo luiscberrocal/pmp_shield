@@ -26,7 +26,7 @@ class Project(TimeStampedModel):
         elif len(milestones) == 1 and milestones[0].milestone_type == Milestone.MILESTONE_START:
             return milestones[0].date, None
         else:
-            None
+            None, None
 
     def __str__(self):
         return self.name
@@ -81,6 +81,16 @@ class Milestone(TimeStampedModel):
 
     class Meta:
         ordering = ('date',)
+
+
+class ProjectMembership(TimeStampedModel):
+    MEMBER_ROLE = 'MEMBER'
+    LEADER_ROLE = 'LEADER'
+    ROLES = ((MEMBER_ROLE, _('Member')),
+             (LEADER_ROLE, _('Leader')))
+    member = models.ForeignKey(Employee, related_name='projects', verbose_name=_('Member'))
+    project = models.ForeignKey(Project, related_name='members', verbose_name=_('Project'))
+    role = models.CharField(max_length=6, choices=ROLES, default=MEMBER_ROLE)
 
 
 auditlog.register(Project)

@@ -1,17 +1,19 @@
 import base64
 import re
+from datetime import timedelta
 
 import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 # Create your models here.
+from django.utils import timezone
 from model_utils.models import TimeStampedModel
 from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
-from .managers import EmployeeManager
+from .managers import EmployeeManager, UnitAssignmentManager
 
 
 class OrganizationUnit(MPTTModel, TimeStampedModel):
@@ -71,6 +73,24 @@ class Employee(TimeStampedModel):
             if self.office is not None:
                 raise ValidationError({'company_id': 'company_id cannot be null if office is valid'})
 
+    def assign_to_office(self, office, start_date=timezone.now()):
+        try:
+            current_assignment = UnitAssignment.objects.get_current_assignment(employee=self)
+            if current_assignment.start_date > start_date:
+                msg = 'Cannot start an assignment before previous one started. ' \
+                      'Previous: %s, start date: %s. Current: %s, start date: %s'
+                raise ValueError(msg % (current_assignment.office, current_assignment.start_date,
+                                        office, start_date))
+        except UnitAssignment.DoesNotExist:
+            current_assignment = None
+        if current_assignment:
+            current_assignment.end_date = start_date - timedelta(days=1)
+            current_assignment.save()
+        assignment = UnitAssignment.objects.create(employee=self, start_date=start_date, office=office)
+        return assignment
+
+
+
 
 class Phone(TimeStampedModel):
     BUSINESS = 'BUSINESS'
@@ -90,3 +110,12 @@ class Phone(TimeStampedModel):
 
     def __str__(self):
         return '%s %s: %s' % (self.owner, self.phone_type, self.phone_number)
+
+class UnitAssignment(TimeStampedModel):
+    employee = models.ForeignKey(Employee, related_name='assignments', verbose_name=_('Employee'))
+    office = models.ForeignKey(OrganizationUnit, related_name='assignments', verbose_name=('Office'))
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+
+    objects = UnitAssignmentManager()
+
