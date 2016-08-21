@@ -73,3 +73,37 @@ class TestCreateEmployeeCommand(TestCase):
             else:
                 results.append(line.strip('\n'))
         return results
+
+class TestCreateFakeEmployeesCommand(TestCase):
+
+    def test_create_random(self):
+        content = StringIO()
+        call_command('create_fake_employees', count='10', stdout=content)
+        results = self.get_results(content)
+
+        self.assertEqual(10, Employee.objects.count())
+        self.assertEqual(10, len(results))
+
+    def test_create_for_office(self):
+        content = StringIO()
+        content2 = StringIO()
+        call_command('create_fake_employees', count='10', office='TINO-NS', stdout=content)
+        call_command('create_fake_employees', count='8', office='TINO-SS', stdout=content2)
+        results = self.get_results(content)
+
+        self.assertEqual(18, Employee.objects.count())
+
+        self.assertEqual(10, len(results))
+        self.assertEqual(10, Employee.objects.filter(office__short_name='TINO-NS').count())
+
+        results = self.get_results(content2)
+        self.assertEqual(8, len(results))
+        self.assertEqual(8, Employee.objects.filter(office__short_name='TINO-SS').count())
+
+    def get_results(self, content):
+        content.seek(0)
+        lines = content.readlines()
+        results = list()
+        for line in lines:
+            results.append(line.strip('\n'))
+        return results
