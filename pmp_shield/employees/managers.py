@@ -38,8 +38,16 @@ class EmployeeManager(Manager):
                     pass
             return employee, created
 
+        def currently_assigned_to(self, office):
+            from .models import UnitAssignment
+            assignments_query = UnitAssignment.objects.get_current_assignments_to(office).only('employee__id')
+            return self.filter(id__in=assignments_query)
+
 
 class UnitAssignmentManager(Manager):
 
     def get_current_assignment(self, employee):
         return self.get(employee=employee, end_date__isnull=True)
+
+    def get_current_assignments_to(self, office):
+        return self.filter(office=office, end_date__isnull=True)

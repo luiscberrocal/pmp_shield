@@ -239,11 +239,32 @@ class TestACPEmployee(TestCase):
             msg = str(e).split('\n')[0]
             self.assertEqual('null value in column "company_id" violates not-null constraint', msg)
 
+
+    def test_currently_assigned_to(self):
+        ns = OrganizationUnit.objects.get(short_name='TINO-NS')
+        ss = OrganizationUnit.objects.get(short_name='TINO-SS')
+
+        start_date = datetime.date(2016, 10, 1)
+        assignments_tino_ns = UnitAssignmentFactory.create_batch(10, office=ns, start_date=start_date)
+        assignments_tino_ss = UnitAssignmentFactory.create_batch(5, office=ss, start_date=start_date)
+        tino_ns_employees = Employee.objects.currently_assigned_to(ns)
+        self.assertEqual(10, tino_ns_employees.count())
+        for ns_employee in tino_ns_employees:
+            self.assertEqual('TINO-NS', UnitAssignment.objects.get_current_assignment(ns_employee).office.short_name)
+
 class TestUnitAssignment(TestCase):
 
     def test_create(self):
         assignment = UnitAssignmentFactory.create()
         self.assertEqual(1, UnitAssignment.objects.count())
+
+    def test_get_current_assignments_to(self):
+        ns = OrganizationUnit.objects.get(short_name='TINO-NS')
+
+        start_date = datetime.date(2016, 10, 1)
+        assignments_tino_ns = UnitAssignmentFactory.create_batch(10, office=ns, start_date=start_date)
+        self.assertEqual(10, UnitAssignment.objects.get_current_assignments_to(ns).count())
+
 
     def test_get_current_assignment(self):
         office = OrganizationUnit.objects.get(short_name='TINO-NS')
