@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
 from django.conf import settings
 
@@ -8,6 +8,9 @@ from ...users.tests.factories import UserFactory
 from ..models import Employee
 
 
+@override_settings(AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+))
 class TestEmployeeListView(TestCase):
 
     def setUp(self):
