@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase
 
-from pmp_shield.employees.models import Employee
+from pmp_shield.employees.models import Employee, UnitAssignment
 
 
 class TestCreateEmployeeCommand(TestCase):
@@ -81,6 +81,7 @@ class TestCreateFakeEmployeesCommand(TestCase):
         call_command('create_fake_employees', count='10', stdout=content)
         results = self.get_results(content)
 
+        self.assertEqual(0, UnitAssignment.objects.count())
         self.assertEqual(10, Employee.objects.count())
         self.assertEqual(10, len(results))
 
@@ -92,6 +93,7 @@ class TestCreateFakeEmployeesCommand(TestCase):
         results = self.get_results(content)
 
         self.assertEqual(18, Employee.objects.count())
+        self.assertEqual(0, UnitAssignment.objects.count())
 
         self.assertEqual(10, len(results))
         self.assertEqual(10, Employee.objects.filter(office__short_name='TINO-NS').count())
@@ -99,6 +101,16 @@ class TestCreateFakeEmployeesCommand(TestCase):
         results = self.get_results(content2)
         self.assertEqual(8, len(results))
         self.assertEqual(8, Employee.objects.filter(office__short_name='TINO-SS').count())
+
+    def test_create_for_office_with_assignment(self):
+        content = StringIO()
+        call_command('create_fake_employees', count='10', office='TINO-NS',
+                     assignment_date='2016-10-1', stdout=content)
+
+        results = self.get_results(content)
+        self.assertEqual(10, Employee.objects.count())
+        self.assertEqual(10, len(results))
+        self.assertEqual(10, UnitAssignment.objects.filter(office__short_name='TINO-NS').count())
 
     def get_results(self, content):
         content.seek(0)
