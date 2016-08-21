@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from django.utils.translation import ugettext_lazy as _
-from ..employees.models import Employee
+from ..employees.models import Employee, OrganizationUnit
 
 
 class Project(TimeStampedModel):
@@ -15,6 +15,9 @@ class Project(TimeStampedModel):
     project_manager = models.ForeignKey(Employee, verbose_name=('Project Manager'), related_name='managed_projects')
     justification = models.TextField(_('Justification'))
     scope = models.TextField(_('Scope'))
+    office = models.ForeignKey(OrganizationUnit, verbose_name=_('office in charge'),
+                               blank=True, null=True, related_name='projects')
+
     history = AuditlogHistoryField()
 
     def start_end_dates(self):
@@ -68,7 +71,7 @@ class Milestone(TimeStampedModel):
                        (MILESTONE_OTHER, _('Other')))
 
     name = models.CharField(_('Name'),max_length=120)
-    description = models.TextField(_('Description'))
+    description = models.TextField(_('Description'), blank=True)
     project = models.ForeignKey(Project, verbose_name=_('Project'), related_name='milestones')
     date = models.DateField(_('Date'))
     milestone_type = models.CharField(max_length=5, verbose_name=_('Milestone type'),

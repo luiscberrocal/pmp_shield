@@ -21,6 +21,7 @@ class EmployeeListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = super(EmployeeListView, self).get_queryset()
+        self.office = None
         if self.kwargs.get('office_slug'):
             try:
                 self.office = OrganizationUnit.objects.get(slug=self.kwargs.get('office_slug'))
@@ -30,7 +31,6 @@ class EmployeeListView(LoginRequiredMixin, ListView):
                 else:
                     return Employee.objects.currently_assigned_to(self.office)
             except OrganizationUnit.DoesNotExist:
-                self.office = None
                 return None
         else:
             return qs

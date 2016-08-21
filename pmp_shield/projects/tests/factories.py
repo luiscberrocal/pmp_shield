@@ -1,12 +1,13 @@
 from datetime import timedelta
 from random import randint
 
-from factory import DjangoModelFactory, SubFactory, Sequence, post_generation, LazyAttribute
+from factory import DjangoModelFactory, SubFactory, Sequence, post_generation, LazyAttribute, Iterator
 from faker import Factory as FakeFactory
 
 from django.conf import settings
 from pytz import timezone
 
+from ...employees.models import OrganizationUnit
 from ..models import Project, Assumption, Restriction, Milestone, ProjectMembership
 from ...employees.tests.factories import EmployeeFactory
 
@@ -22,6 +23,7 @@ class BasicProjectFactory(DjangoModelFactory):
     project_manager = SubFactory(EmployeeFactory)
     justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
+    office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
 
 
 class ProjectFactory(BasicProjectFactory):

@@ -4,9 +4,22 @@ from django.contrib import admin
 # Register your models here.
 from .models import Project, Assumption, Restriction, Milestone
 
+class MilestoneInline(admin.TabularInline):
+    model = Milestone
+
+    def get_extra(self, request, obj=None, **kwargs):
+        extra = 3
+        if obj:
+            return 1
+        return extra
+
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'sponsor', 'project_manager')
+    inlines = [
+        MilestoneInline,
+    ]
+
 
 class AssumptionAdmin(admin.ModelAdmin):
     list_display = ('project', 'display_order', 'name', 'description')
