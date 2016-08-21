@@ -3,6 +3,7 @@ import re
 from datetime import timedelta
 
 import requests
+from autoslug import AutoSlugField
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -20,6 +21,7 @@ class OrganizationUnit(MPTTModel, TimeStampedModel):
     name = models.CharField(_('Office name'), max_length=120)
     short_name = models.CharField(_('Office Letters'), max_length=8, unique=True)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='offices', db_index=True)
+    slug = AutoSlugField(populate_from='short_name', unique=True)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.short_name)

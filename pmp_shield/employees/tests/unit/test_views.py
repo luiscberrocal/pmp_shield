@@ -3,9 +3,9 @@ from django.test import TestCase, Client, override_settings
 
 from django.conf import settings
 
-from ...employees.tests.factories import EmployeeFactory
-from ...users.tests.factories import UserFactory
-from ..models import Employee
+from pmp_shield.employees.tests.factories import EmployeeFactory
+from pmp_shield.users.tests.factories import UserFactory
+from pmp_shield.employees.models import Employee
 
 
 @override_settings(AUTHENTICATION_BACKENDS = (

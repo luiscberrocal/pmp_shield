@@ -10,19 +10,24 @@ from django.db.utils import IntegrityError
 
 import logging
 
-from .factories import EmployeeFactory, UnitAssignmentFactory
-from ..models import OrganizationUnit, Phone, Employee, UnitAssignment
+from pmp_shield.employees.tests.factories import EmployeeFactory, UnitAssignmentFactory
+from pmp_shield.employees.models import OrganizationUnit, Phone, Employee, UnitAssignment
 
 logger = logging.getLogger(__name__)
 
 
 class TestOrganizationUnit(TestCase):
+
     def test_load(self):
         op = OrganizationUnit.objects.get(short_name='OP')
         opt = OrganizationUnit.objects.get(short_name='OPT')
         self.assertEqual(22, OrganizationUnit.objects.count())
         self.assertEqual(4, len(op.offices.all()))
         self.assertEqual(4, len(opt.offices.all()))
+
+    def test_slug(self):
+        tino_ns = OrganizationUnit.objects.get(short_name='TINO-NS')
+        self.assertEqual('tino-ns', tino_ns.slug)
 
 
 class TestACPEmployee(TestCase):

@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase
 
-from ..models import Employee
+from pmp_shield.employees.models import Employee
 
 
 class TestCreateEmployeeCommand(TestCase):
