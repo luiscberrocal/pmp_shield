@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% load static %}{% load i18n %}
-{% block title %}Employees{% endblock %}
+{% block title %}{{ employee.username }}{% endblock %}
 
 {% block content %}
-
 <div class="container">
 
     <h2>{{ title }}</h2>
 
     <div class="list-group">
         {% for employee in employee_list %}
-          <a href="" class="list-group-item">
+          <a href="{% url 'employees:employee-details' employee.pk %}" class="list-group-item">
             <h4 class="list-group-item-heading">{{ employee }}</h4>
           </a>
         {% endfor %}

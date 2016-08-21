@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}{% load i18n %}
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+
+    <h2>{{ employee }}</h2>
+
+    <div class="list-group">
+        <div>Userame</div>
+        <div>{{ employee.username }}</div>
+         <div>Email</div>
+        <div>{{ employee.email }}</div>
+        {% for phone in employee.phones.all %}
+            <div>{{ phone.phone_type }}</div>
+            <div>{{ phone.phone_number }}</div>
+        {% endfor %}
+    </div>
+
+
+</div>
+
+{% endblock %}

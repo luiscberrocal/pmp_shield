@@ -25,7 +25,7 @@ class EmployeeFactory(DjangoModelFactory):
 
     @lazy_attribute
     def username(self):
-        return '%s.%s' % (self.first_name, self.last_name)
+        return '%s.%s' % (self.first_name.lower(), self.last_name.lower())
 
     @lazy_attribute
     def email(self):
