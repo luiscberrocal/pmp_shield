@@ -49,6 +49,7 @@ class PhoneFactory(DjangoModelFactory):
 
     class Meta:
         model = Phone
+
     phone_number = faker.numerify('!##-####')
     phone_type = Iterator(Phone.PHONE_TYPES, getter= lambda c: c[0])
 

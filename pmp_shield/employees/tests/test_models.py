@@ -92,6 +92,22 @@ class TestACPEmployee(TestCase):
             self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01', parts[1].strip())
             self.assertEqual('Current: Unidad de Soluciones de Servicios Marítimos y Operacionales (TINO-SS), start date: 2016-09-01', parts[2].strip())
 
+    def test_assign_to_office_wrong_start_date_2(self):
+        office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
+
+        start_date = datetime.date(2016, 10, 1)
+        assignment = UnitAssignmentFactory.create(office=office, start_date=start_date)
+        try:
+            new_assignment = assignment.employee.assign_to_office(new_office, start_date=datetime.date(2016, 10, 1))
+            self.fail('Should have sent an error')
+        except ValueError as e:
+            parts = str(e).split('.')
+            self.assertEqual('Cannot start an assignment before previous one started', parts[0])
+            self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01', parts[1].strip())
+            self.assertEqual('Current: Unidad de Soluciones de Servicios Marítimos'
+                             ' y Operacionales (TINO-SS), start date: 2016-10-01', parts[2].strip())
+
 
     def test_assign_to_office_no_previous_assignment(self):
         employee = EmployeeFactory.create()

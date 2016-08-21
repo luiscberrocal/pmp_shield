@@ -29,13 +29,14 @@ class OrganizationUnit(MPTTModel, TimeStampedModel):
 class Employee(TimeStampedModel):
     company_id = models.CharField(_('ACP IP'), max_length=7, blank=True)
     office = models.ForeignKey(OrganizationUnit, verbose_name=_('Office'), blank=True, null=True)
-    first_name = models.CharField(_('First name'), max_length=60)
-    middle_name = models.CharField(_('Middle name'), max_length=60, blank=True)
-    last_name = models.CharField(_('Last name'), max_length=60)
-    username = models.CharField(_('Username'), max_length=35, unique=True)
+    first_name = models.CharField(_('first name'), max_length=60)
+    middle_name = models.CharField(_('middle name'), max_length=60, blank=True)
+    last_name = models.CharField(_('last name'), max_length=60)
+    username = models.CharField(_('username'), max_length=35, unique=True)
     email = models.EmailField()
     phones = models.ManyToManyField('Phone', related_name='owner')
-    photo = models.ImageField(upload_to='photos/', max_length=255, blank=True)
+    photo = models.ImageField(upload_to='photos/', max_length=255,
+                              blank=True, verbose_name=_('photo'))
 
     @property
     def photo_url(self):
@@ -76,7 +77,7 @@ class Employee(TimeStampedModel):
     def assign_to_office(self, office, start_date=timezone.now()):
         try:
             current_assignment = UnitAssignment.objects.get_current_assignment(employee=self)
-            if current_assignment.start_date > start_date:
+            if current_assignment.start_date >= start_date:
                 msg = 'Cannot start an assignment before previous one started. ' \
                       'Previous: %s, start date: %s. Current: %s, start date: %s'
                 raise ValueError(msg % (current_assignment.office, current_assignment.start_date,
