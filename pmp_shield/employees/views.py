@@ -23,7 +23,11 @@ class EmployeeListView(LoginRequiredMixin, ListView):
         qs = super(EmployeeListView, self).get_queryset()
         if self.kwargs.get('office_slug'):
             self.office = OrganizationUnit.objects.get(slug=self.kwargs.get('office_slug'))
-            return Employee.objects.currently_assigned_to(self.office)
+            if self.kwargs.get('fiscal_year'):
+                year = int(self.kwargs['fiscal_year'])
+                return Employee.objects.assigned_on_fiscal_year_to(year, self.office)
+            else:
+                return Employee.objects.currently_assigned_to(self.office)
         else:
             return qs
 

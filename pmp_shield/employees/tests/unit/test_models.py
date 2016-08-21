@@ -10,8 +10,8 @@ from django.db.utils import IntegrityError
 
 import logging
 
-from pmp_shield.employees.tests.factories import EmployeeFactory, UnitAssignmentFactory
-from pmp_shield.employees.models import OrganizationUnit, Phone, Employee, UnitAssignment
+from ..factories import EmployeeFactory, UnitAssignmentFactory
+from ...models import OrganizationUnit, Phone, Employee, UnitAssignment
 
 logger = logging.getLogger(__name__)
 
@@ -244,9 +244,12 @@ class TestACPEmployee(TestCase):
         ns = OrganizationUnit.objects.get(short_name='TINO-NS')
         ss = OrganizationUnit.objects.get(short_name='TINO-SS')
 
-        start_date = datetime.date(2016, 10, 1)
+        start_date = datetime.date(2015, 10, 1)
         assignments_tino_ns = UnitAssignmentFactory.create_batch(10, office=ns, start_date=start_date)
         assignments_tino_ss = UnitAssignmentFactory.create_batch(5, office=ss, start_date=start_date)
+        self.assertEqual(10, UnitAssignment.objects.filter(office=ns, end_date__isnull=True).count())
+        self.assertEqual(5, UnitAssignment.objects.filter(office=ss, end_date__isnull=True).count())
+
         tino_ns_employees = Employee.objects.currently_assigned_to(ns)
         self.assertEqual(10, tino_ns_employees.count())
         for ns_employee in tino_ns_employees:
@@ -286,6 +289,30 @@ class TestUnitAssignment(TestCase):
         self.assertEqual(3, UnitAssignment.objects.filter(employee=assignment.employee).count())
         self.assertEqual(last_office, UnitAssignment.objects.get_current_assignment(employee=assignment.employee).office)
 
+
+    def test_get_fiscal_year_assignments_to_all_currently_assigned(self):
+        office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
+        last_office = OrganizationUnit.objects.get(short_name='OPT')
+
+        start_date = datetime.date(2015, 10, 1)
+        UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date)
+        UnitAssignmentFactory.create_batch(5, office=new_office, start_date=start_date)
+        self.assertEqual(3, UnitAssignment.objects.get_fiscal_year_assignments_to(2016, office).count())
+
+
+    def test_get_fiscal_year_assignments_to_all_currently_assigned_2(self):
+        office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
+        last_office = OrganizationUnit.objects.get(short_name='OPT')
+
+        start_date = datetime.date(2015, 10, 3)
+        end_date = start_date + datetime.timedelta(days=60)
+        UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date, end_date=end_date)
+        UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date)
+        UnitAssignmentFactory.create_batch(5, office=new_office, start_date=start_date)
+        self.assertEqual(6, UnitAssignment.objects.get_fiscal_year_assignments_to(2016, office).count())
+        self.assertEqual(0, UnitAssignment.objects.get_fiscal_year_assignments_to(2015, office).count())
 
 
 
