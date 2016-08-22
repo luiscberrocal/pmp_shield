@@ -2,7 +2,28 @@ from auditlog.models import LogEntry
 from django.contrib import admin
 
 # Register your models here.
+from django.contrib.admin import SimpleListFilter
+from django.utils.translation import gettext_lazy as _
 from .models import Project, Assumption, Restriction, Milestone
+
+class OfficeFilter(SimpleListFilter):
+    title = _('office') # or use _('country') for translated title
+    parameter_name = 'office'
+
+    def lookups(self, request, model_admin):
+        offices = set([c.office for c in model_admin.model.objects.all()])
+        if list(offices)[0] is None:
+            return None
+        else:
+            return [(c.id, c.short_name) for c in offices]
+        # You can also use hardcoded model name like "Country" instead of
+        # "model_admin.model" if this is not direct foreign key filter
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(office__id__exact=self.value())
+        else:
+            return queryset
 
 class MilestoneInline(admin.TabularInline):
     model = Milestone
@@ -15,7 +36,9 @@ class MilestoneInline(admin.TabularInline):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'sponsor', 'project_manager')
+
+    list_display = ('name', 'office', 'sponsor', 'project_manager')
+    list_filter = (OfficeFilter,)
     inlines = [
         MilestoneInline,
     ]
