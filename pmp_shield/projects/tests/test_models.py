@@ -4,7 +4,7 @@ from auditlog.models import LogEntry
 from django.test import TestCase
 
 from ...risks.models import Risk
-from ..models import Project, Assumption, Restriction, Milestone
+from ..models import Project, Assumption, Restriction, Milestone, ProjectMembership
 from .factories import ProjectFactory, RestrictionFactory, MilestoneFactory
 
 
@@ -17,6 +17,8 @@ class TestProject(TestCase):
         self.assertEqual(4, project.risks.count())
         self.assertEqual(4, project.restrictions.count())
         self.assertEqual(4, project.milestones.count())
+        self.assertEqual(4, project.members.count())
+        self.assertEqual(1, project.members.filter(role=ProjectMembership.LEADER_ROLE).count())
 
         self.assertTrue(project.history.count() == 1, msg="There is one log entry")
 

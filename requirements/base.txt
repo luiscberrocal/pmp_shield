@@ -52,4 +52,5 @@ django_auth_ldap3_ad==1.4.5
 requests==2.10.0
 django-mptt==0.8.5
 openpyxl==2.3.5
-django-auditlog==0.3.3
+django-auditlog==0.4.0
+acp-calendar==0.4.0

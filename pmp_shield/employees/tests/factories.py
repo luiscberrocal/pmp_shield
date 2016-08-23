@@ -1,11 +1,13 @@
 import string
 
-from factory import Iterator, lazy_attribute, post_generation, LazyAttribute
+from factory import Iterator, lazy_attribute, post_generation, LazyAttribute, SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 from faker import Factory as FakerFactory
+from pytz import timezone
+from django.conf import settings
 
-from ..models import OrganizationUnit, Employee, Phone
+from ..models import OrganizationUnit, Employee, Phone, UnitAssignment
 
 faker = FakerFactory.create()
 
@@ -23,7 +25,7 @@ class EmployeeFactory(DjangoModelFactory):
 
     @lazy_attribute
     def username(self):
-        return '%s.%s' % (self.first_name, self.last_name)
+        return '%s.%s' % (self.first_name.lower(), self.last_name.lower())
 
     @lazy_attribute
     def email(self):
@@ -47,6 +49,16 @@ class PhoneFactory(DjangoModelFactory):
 
     class Meta:
         model = Phone
+
     phone_number = faker.numerify('!##-####')
     phone_type = Iterator(Phone.PHONE_TYPES, getter= lambda c: c[0])
 
+class UnitAssignmentFactory(DjangoModelFactory):
+
+    class Meta:
+        model = UnitAssignment
+
+    employee = SubFactory(EmployeeFactory)
+    office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
+    start_date = LazyAttribute(lambda x: faker.date_time_between(start_date="-1y", end_date="now",
+                                                           tzinfo=timezone(settings.TIME_ZONE)))

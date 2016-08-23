@@ -39,6 +39,7 @@ DJANGO_APPS = (
 THIRD_PARTY_APPS = (
     'crispy_forms',  # Form layouts
     'auditlog',
+    'acp_calendar',
 )
 
 # Apps specific for this project go here.

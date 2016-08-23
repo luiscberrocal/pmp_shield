@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-from ..initial_data import create_acp_organization
+from pmp_shield.employees.initial_data import create_acp_organization
 
 def load_data(apps, schema_editor):
     create_acp_organization()
