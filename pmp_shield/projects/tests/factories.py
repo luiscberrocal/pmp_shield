@@ -22,6 +22,7 @@ class BasicProjectFactory(DjangoModelFactory):
     sponsor = SubFactory(EmployeeFactory)
     project_manager = SubFactory(EmployeeFactory)
     justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
+    description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
     office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
 

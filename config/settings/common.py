@@ -48,7 +48,8 @@ LOCAL_APPS = (
     'pmp_shield.users.apps.UsersConfig',
     'pmp_shield.employees',
     'pmp_shield.projects',
-    'pmp_shield.risks'
+    'pmp_shield.risks',
+    'pmp_shield.goals',
     # Your stuff: custom apps go here
 )
 
