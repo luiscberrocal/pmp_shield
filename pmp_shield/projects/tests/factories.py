@@ -1,6 +1,7 @@
 from datetime import timedelta
 from random import randint
 
+from acp_calendar.models import FiscalYear
 from factory import DjangoModelFactory, SubFactory, Sequence, post_generation, LazyAttribute, Iterator
 from faker import Factory as FakeFactory
 
@@ -22,20 +23,16 @@ class BasicProjectFactory(DjangoModelFactory):
     sponsor = SubFactory(EmployeeFactory)
     project_manager = SubFactory(EmployeeFactory)
     justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
+    description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
     office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
+    fiscal_year = 'AF00'
 
 
 class ProjectFactory(BasicProjectFactory):
 
-    # class Meta:
-    #     model = Project
-    #
-    # name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
-    # sponsor = SubFactory(EmployeeFactory)
-    # project_manager = SubFactory(EmployeeFactory)
-    # justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
-    # scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
+    class Params:
+        start_date = None
 
     @post_generation
     def assumptions(self, create, count, **kwargs):
@@ -73,12 +70,19 @@ class ProjectFactory(BasicProjectFactory):
 
     @post_generation
     def milestones(self, create, count, **kwargs):
+        if isinstance(count, dict):
+            start_date = count['start_date']
+            count = None
+        else:
+            start_date = faker.date_time_between(start_date="now", end_date="1y",
+                                                 tzinfo=timezone(settings.TIME_ZONE))
         if count is None:
             count = 4
         make_milestones = getattr(MilestoneFactory, 'create' if create else 'build')
         milestones = list() #[make_milestones(project=self) for i in range(count)]
-        start_date = faker.date_time_between(start_date="now", end_date="1y",
-                                            tzinfo=timezone(settings.TIME_ZONE))
+
+        fiscal_year = FiscalYear.create_from_date(start_date, display='AF%s')
+        self.fiscal_year = str(fiscal_year)
         for i in range(count):
             if i == 0:
                 milestone = make_milestones(project=self, milestone_type=Milestone.MILESTONE_START,
@@ -93,7 +97,9 @@ class ProjectFactory(BasicProjectFactory):
                 start_date = start_date + timedelta(weeks=randint(2, 8))
             milestones.append(milestone)
 
-        if not create:
+        if create:
+            self.save()
+        else:
             # Fiddle with django internals so self.product_set.all() works with build()
             self._prefetched_objects_cache = {'milestones': milestones}
 

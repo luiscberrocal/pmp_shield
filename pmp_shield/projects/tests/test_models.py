@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from auditlog.models import LogEntry
 from django.test import TestCase
@@ -20,16 +20,23 @@ class TestProject(TestCase):
         self.assertEqual(4, project.members.count())
         self.assertEqual(1, project.members.filter(role=ProjectMembership.LEADER_ROLE).count())
 
-        self.assertTrue(project.history.count() == 1, msg="There is one log entry")
+        self.assertEqual(2, project.history.count(), msg="There is one log entry")
 
-        history = project.history.get()
+        history = project.history.last()
         self.assertEqual(history.action, LogEntry.Action.CREATE, msg="Action is 'CREATE'")
+
+    def test_create_with_start_date(self):
+        project = ProjectFactory.create(milestones={'start_date': date(2016,10,1)})
+        start, _ =  project.start_end_dates()
+        self.assertEqual(start, date(2016,10,1))
+        self.assertEqual('AF17', project.fiscal_year)
+        self.assertEqual(4, project.milestones.count())
 
     def test_update_name(self):
         project = ProjectFactory.create(name='Original name')
         project.name = 'New name'
         project.save()
-        self.assertTrue(project.history.count() == 2, msg="There are two log entry")
+        self.assertEqual(3, project.history.count())
         self.assertEqual('New name', project.history.first().changes_dict['name'][1])
         self.assertJSONEqual('{"name": ["Original name", "New name"]}', project.history.first().changes)
 
