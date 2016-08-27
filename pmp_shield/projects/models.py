@@ -1,5 +1,6 @@
 from auditlog.models import AuditlogHistoryField
 from auditlog.registry import auditlog
+from django.core.validators import RegexValidator
 from django.db import models
 
 # Create your models here.
@@ -18,6 +19,10 @@ class Project(TimeStampedModel):
     scope = models.TextField(_('Scope'))
     office = models.ForeignKey(OrganizationUnit, verbose_name=_('office in charge'),
                                blank=True, null=True, related_name='projects')
+    fiscal_year = models.CharField(max_length=4,
+                                   validators=[RegexValidator(regex=r'^AF\d{2}$',
+                                                              message=_('Fiscal year must use format AFYY. '
+                                                                        'For example AF16 for fiscal year 2016'))])
 
     history = AuditlogHistoryField()
 
