@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from auditlog.models import LogEntry
 from django.test import TestCase
@@ -24,6 +24,13 @@ class TestProject(TestCase):
 
         history = project.history.last()
         self.assertEqual(history.action, LogEntry.Action.CREATE, msg="Action is 'CREATE'")
+
+    def test_create_with_start_date(self):
+        project = ProjectFactory.create(milestones={'start_date': date(2016,10,1)})
+        start, _ =  project.start_end_dates()
+        self.assertEqual(start, date(2016,10,1))
+        self.assertEqual('AF17', project.fiscal_year)
+        self.assertEqual(4, project.milestones.count())
 
     def test_update_name(self):
         project = ProjectFactory.create(name='Original name')

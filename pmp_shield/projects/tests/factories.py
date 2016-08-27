@@ -31,14 +31,8 @@ class BasicProjectFactory(DjangoModelFactory):
 
 class ProjectFactory(BasicProjectFactory):
 
-    # class Meta:
-    #     model = Project
-    #
-    # name = LazyAttribute(lambda x: faker.text(max_nb_chars=120))
-    # sponsor = SubFactory(EmployeeFactory)
-    # project_manager = SubFactory(EmployeeFactory)
-    # justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
-    # scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
+    class Params:
+        start_date = None
 
     @post_generation
     def assumptions(self, create, count, **kwargs):
@@ -76,12 +70,17 @@ class ProjectFactory(BasicProjectFactory):
 
     @post_generation
     def milestones(self, create, count, **kwargs):
+        if isinstance(count, dict):
+            start_date = count['start_date']
+            count = None
+        else:
+            start_date = faker.date_time_between(start_date="now", end_date="1y",
+                                                 tzinfo=timezone(settings.TIME_ZONE))
         if count is None:
             count = 4
         make_milestones = getattr(MilestoneFactory, 'create' if create else 'build')
         milestones = list() #[make_milestones(project=self) for i in range(count)]
-        start_date = faker.date_time_between(start_date="now", end_date="1y",
-                                            tzinfo=timezone(settings.TIME_ZONE))
+
         fiscal_year = FiscalYear.create_from_date(start_date, display='AF%s')
         self.fiscal_year = str(fiscal_year)
         for i in range(count):
