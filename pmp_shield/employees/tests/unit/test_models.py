@@ -256,6 +256,28 @@ class TestACPEmployee(TestCase):
         for ns_employee in tino_ns_employees:
             self.assertEqual('TINO-NS', UnitAssignment.objects.get_current_assignment(ns_employee).office.short_name)
 
+    def test_assigned_on_fiscal_year_to(self):
+        tino_ns_office = OrganizationUnit.objects.get(short_name='TINO-NS')
+        tino_ss_factory = OrganizationUnit.objects.get(short_name='TINO-SS')
+
+        start_date = datetime.date(2015, 10, 1)
+        end_date = start_date + datetime.timedelta(days=60)
+        # Create 3 Assignments for TINO-NS that start on FY16 and end on same fiscal year
+        UnitAssignmentFactory.create_batch(3, office=tino_ns_office, start_date=start_date, end_date=end_date)
+        # Create 3 Assignments for TINO-NS that start on FY16 and have not ended yet
+        UnitAssignmentFactory.create_batch(3, office=tino_ns_office, start_date=start_date)
+        # Create 5 Assignments for TINO-SS that start on FY16 and have not ended yet
+        UnitAssignmentFactory.create_batch(5, office=tino_ss_factory, start_date=start_date)
+        start_date = datetime.date(2015, 10, 1) - datetime.timedelta(days=90)
+        # Create 2 Assignments for TINO-NS that start on FY15 and have not ended yet
+        UnitAssignmentFactory.create_batch(2, office=tino_ns_office, start_date=start_date)
+        end_date = start_date + datetime.timedelta(days=60)
+        # Create 8 Assignments for TINO-NS that start on FY15 and end on FY15
+        UnitAssignmentFactory.create_batch(8, office=tino_ns_office, start_date=start_date, end_date=end_date)
+
+        self.assertEqual(8, Employee.objects.assigned_on_fiscal_year_to(2016, tino_ns_office).count())
+
+
 class TestUnitAssignment(TestCase):
 
     def test_create(self):
@@ -307,13 +329,18 @@ class TestUnitAssignment(TestCase):
         new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
         last_office = OrganizationUnit.objects.get(short_name='OPT')
 
-        start_date = datetime.date(2015, 10, 3)
+        start_date = datetime.date(2015, 10, 1)
         end_date = start_date + datetime.timedelta(days=60)
+        # Create 3 Assignments for ITNO-NS that start on FY16 and end on same fiscal year
         UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date, end_date=end_date)
+        # Create 3 Assignments for ITNO-NS that start on FY16 and have not ended yet
         UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date)
+        # Create 5 Assignments for ITNO-SS that start on FY16 and have not ended yet
         UnitAssignmentFactory.create_batch(5, office=new_office, start_date=start_date)
         self.assertEqual(6, UnitAssignment.objects.get_fiscal_year_assignments_to(2016, office).count())
         self.assertEqual(0, UnitAssignment.objects.get_fiscal_year_assignments_to(2015, office).count())
+
+
 
 
 
