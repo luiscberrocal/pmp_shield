@@ -46,8 +46,8 @@ class EmployeeManager(Manager):
 
     def currently_assigned_to(self, office):
         from .models import UnitAssignment
-        assignments_query = UnitAssignment.objects.get_current_assignments_to(office).only('employee__id')
-        return self.filter(id__in=assignments_query)
+        assignments_list = UnitAssignment.objects.get_current_assignments_to(office).values_list('employee__id', flat=True)
+        return self.filter(id__in=assignments_list)
 
 class UnitAssignmentManager(Manager):
 

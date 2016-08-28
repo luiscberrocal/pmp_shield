@@ -251,7 +251,8 @@ class TestACPEmployee(TestCase):
         self.assertEqual(5, UnitAssignment.objects.filter(office=ss, end_date__isnull=True).count())
 
         tino_ns_employees = Employee.objects.currently_assigned_to(ns)
-        self.assertEqual(10, tino_ns_employees.count())
+        self.assertEqual(10, UnitAssignment.objects.get_current_assignments_to(ns).only('employee__id').count())
+        self.assertEqual(10, Employee.objects.currently_assigned_to(ns).count())
         for ns_employee in tino_ns_employees:
             self.assertEqual('TINO-NS', UnitAssignment.objects.get_current_assignment(ns_employee).office.short_name)
 
