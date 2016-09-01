@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        projects = Project.objects.filter(office__short_name=options['office'], fiscal_year=options['fiscal_year'])
+        projects = Project.objects.filter(executing_office__short_name=options['office'], fiscal_year=options['fiscal_year'])
         count = 0
         count_created = 0
         for project in projects:

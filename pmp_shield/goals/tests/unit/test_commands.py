@@ -15,8 +15,8 @@ class TestCreateGoalsForProjects(TestCase):
     def test_create_goals_for_projects(self):
         content = StringIO()
         tino_ns = OrganizationUnit.objects.get(short_name='TINO-NS')
-        ProjectFactory.create_batch(10, office=tino_ns, milestones={'start_date': date(2015, 10,1)})
-        ProjectFactory.create_batch(10, office=tino_ns, milestones={'start_date': date(2014, 10, 1)})
+        ProjectFactory.create_batch(10, executing_office=tino_ns, milestones={'start_date': date(2015, 10,1)})
+        ProjectFactory.create_batch(10, executing_office=tino_ns, milestones={'start_date': date(2014, 10, 1)})
         call_command('create_goals_for_projects', office='TINO-NS', fiscal_year='AF16', stdout=content)
         results = self.get_results(content)
 
@@ -27,7 +27,7 @@ class TestCreateGoalsForProjects(TestCase):
     def test_create_goals_for_projects_not_created(self):
         content = StringIO()
         tino_ns = OrganizationUnit.objects.get(short_name='TINO-NS')
-        ProjectFactory.create_batch(5, office=tino_ns, milestones={'start_date': date(2015, 10, 1)})
+        ProjectFactory.create_batch(5, executing_office=tino_ns, milestones={'start_date': date(2015, 10, 1)})
         call_command('create_goals_for_projects', office='TINO-NS', fiscal_year='AF16')
         call_command('create_goals_for_projects', office='TINO-NS', fiscal_year='AF16', stdout=content)
         results = self.get_results(content)

@@ -25,8 +25,9 @@ class BasicProjectFactory(DjangoModelFactory):
     justification = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     description = LazyAttribute(lambda x: faker.paragraph(nb_sentences=3, variable_nb_sentences=True))
     scope = LazyAttribute(lambda x: faker.paragraph(nb_sentences=5, variable_nb_sentences=True))
-    office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
+    executing_office = Iterator(OrganizationUnit.objects.filter(parent__isnull=False))
     fiscal_year = 'AF00'
+    priority = 10
 
 
 class ProjectFactory(BasicProjectFactory):

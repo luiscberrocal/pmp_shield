@@ -15,15 +15,15 @@ class Project(TimeStampedModel):
     sponsor = models.ForeignKey(Employee, verbose_name=_('Sponsor'), related_name='sponsored_projects')
     project_manager = models.ForeignKey(Employee, verbose_name=('Project Manager'), related_name='managed_projects')
     description = models.TextField(_('Description'), blank=True)
-    justification = models.TextField(_('Justification'))
-    scope = models.TextField(_('Scope'))
-    office = models.ForeignKey(OrganizationUnit, verbose_name=_('office in charge'),
+    justification = models.TextField(_('Justification'), blank=True)
+    scope = models.TextField(_('Scope'), blank=True)
+    executing_office = models.ForeignKey(OrganizationUnit, verbose_name=_('excecuting office'),
                                blank=True, null=True, related_name='projects')
     fiscal_year = models.CharField(max_length=4,
                                    validators=[RegexValidator(regex=r'^AF\d{2}$',
                                                               message=_('Fiscal year must use format AFYY. '
                                                                         'For example AF16 for fiscal year 2016'))])
-
+    priority = models.IntegerField(_('priority'), default=10)
     history = AuditlogHistoryField()
 
     def start_end_dates(self):
