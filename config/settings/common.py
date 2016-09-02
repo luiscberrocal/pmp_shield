@@ -50,6 +50,7 @@ LOCAL_APPS = (
     'pmp_shield.projects',
     'pmp_shield.risks',
     'pmp_shield.goals',
+    'pmp_shield.positions',
     # Your stuff: custom apps go here
 )
 
