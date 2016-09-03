@@ -19,15 +19,25 @@ logger = logging.getLogger(__name__)
 class MockLDAPTool(object):
     def __init__(self):
         self.ldap_data = {'jhuertas': [{'company_id': '8980986',
-                                       'first_name': 'Jacobo',
-                                       'last_name': 'Huertas',
-                                       'username': 'jhuertas',
-                                       'email': 'jhuertas@micanal.com',
-                                       'office': 'IAIT-TOP',
-                                       'phone': None}]}
+                                        'first_name': 'Jacobo',
+                                        'last_name': 'Huertas',
+                                        'username': 'jhuertas',
+                                        'email': 'jhuertas@micanal.com',
+                                        'office': 'IAIT-TOP',
+                                        'phone': None}],
+                          'cont-vmurillo': [{'company_id': '',
+                                             'first_name': 'Victor',
+                                             'last_name': 'Murillo',
+                                             'username': 'cont-vmurillo',
+                                             'email': 'cont-vmurillo@micanal.com',
+                                             'office': None,
+                                             'phone': '200-4147'}],
+                          }
 
     def search_by_username(self, username):
         result = self.ldap_data.get(username)
+        if result is None:
+            result = []
         return result
 
 
@@ -45,7 +55,6 @@ class TestOrganizationUnit(TestCase):
 
 
 class TestACPEmployee(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -170,26 +179,19 @@ class TestACPEmployee(TestCase):
         self.assertTrue(created)
 
     @mock.patch('requests.get')
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_create_contractor(self, mock_search_by_username, mock_get):
+    def test_get_or_create_from_username_create_contractor(self, mock_get):
         response = Mock()
         response.status_code = 404
         mock_get.return_value = response
-        ldap_data = {'company_id': '',
-                     'first_name': 'Victor',
-                     'last_name': 'Murillo',
-                     'username': 'cont-vmurillo',
-                     'email': 'cont-vmurillo@pancanal.com',
-                     'office': None,
-                     'phone': '272-4147'}
-
-        mock_search_by_username.return_value = [ldap_data]
-        employee, created = Employee.objects.get_or_create_from_username('cont-vmurillo')
-        self.assertEqual('Victor', employee.first_name)
-        self.assertEqual('272-4147', employee.phones.first().phone_number)
-        self.assertEqual(1, Employee.objects.count())
-        self.assertEqual(None, employee.photo_url)
-        self.assertTrue(created)
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            employee, created = Employee.objects.get_or_create_from_username('cont-vmurillo')
+            self.assertEqual('Victor', employee.first_name)
+            self.assertEqual('Murillo', employee.last_name)
+            self.assertEqual('200-4147', employee.phones.first().phone_number)
+            self.assertEqual(1, Employee.objects.count())
+            self.assertEqual(None, employee.photo_url)
+            self.assertTrue(created)
 
     @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
     def test_get_or_create_from_username_no_username(self, mock_search_by_username):
