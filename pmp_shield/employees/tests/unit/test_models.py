@@ -32,6 +32,13 @@ class MockLDAPTool(object):
                                              'email': 'cont-vmurillo@micanal.com',
                                              'office': None,
                                              'phone': '200-4147'}],
+                          'lberrocal': [{'company_id': '1865325',
+                                         'first_name': 'Luis',
+                                         'last_name': 'Berrocal Cordoba',
+                                         'username': 'lberrocal',
+                                         'email': 'lberrocal@pancanal.com',
+                                         'office': 'TINO-NS',
+                                         'phone': '272-4149'}],
                           }
 
     def search_by_username(self, username):
@@ -153,30 +160,23 @@ class TestACPEmployee(TestCase):
         self.assertEqual(office, current_assignment.office)
 
     @mock.patch('requests.get')
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_create(self, mock_search_by_username, mock_get):
+    def test_get_or_create_from_username_create(self, mock_get):
         response = Mock()
         response.status_code = 200
         photo_bytes_array = bytearray(self.photo_bytes)
         expected_image = "data:image/jpg;base64,%s" % base64.b64encode(photo_bytes_array).decode('utf-8')
         response.content = photo_bytes_array
         mock_get.return_value = response
-        ldap_data = {'company_id': '1865325',
-                     'first_name': 'Luis',
-                     'last_name': 'Berrocal Cordoba',
-                     'username': 'lberrocal',
-                     'email': 'lberrocal@pancanal.com',
-                     'office': 'TINO-NS',
-                     'phone': '272-4149'}
-        mock_search_by_username.return_value = [ldap_data]
 
-        employee, created = Employee.objects.get_or_create_from_username('lberrocal')
-        self.assertEqual('Luis', employee.first_name)
-        self.assertEqual('Berrocal Cordoba', employee.last_name)
-        self.assertEqual('272-4149', employee.phones.first().phone_number)
-        self.assertEqual(1, Employee.objects.count())
-        self.assertEqual(expected_image, employee.photo_url)
-        self.assertTrue(created)
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            employee, created = Employee.objects.get_or_create_from_username('lberrocal')
+            self.assertEqual('Luis', employee.first_name)
+            self.assertEqual('Berrocal Cordoba', employee.last_name)
+            self.assertEqual('272-4149', employee.phones.first().phone_number)
+            self.assertEqual(1, Employee.objects.count())
+            self.assertEqual(expected_image, employee.photo_url)
+            self.assertTrue(created)
 
     @mock.patch('requests.get')
     def test_get_or_create_from_username_create_contractor(self, mock_get):
@@ -193,13 +193,12 @@ class TestACPEmployee(TestCase):
             self.assertEqual(None, employee.photo_url)
             self.assertTrue(created)
 
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_no_username(self, mock_search_by_username):
-        mock_search_by_username.return_value = []
-
-        employee, created = Employee.objects.get_or_create_from_username('invaliduser')
-        self.assertIsNone(employee)
-        self.assertFalse(created)
+    def test_get_or_create_from_username_no_username(self):
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            employee, created = Employee.objects.get_or_create_from_username('invaliduser')
+            self.assertIsNone(employee)
+            self.assertFalse(created)
 
     @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
     def test_get_or_create_from_username_get(self, mock_search_by_username):
