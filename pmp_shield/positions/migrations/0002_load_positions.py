@@ -4,13 +4,13 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-from ..initial_data import create_grades, create_pds, create_positions
+from ..initial_data import create_grades, create_pds
 
 
 def load_data(apps, schema_editor):
     create_grades()
     create_pds()
-    create_positions()
+    #create_positions()
 
 class Migration(migrations.Migration):
 
