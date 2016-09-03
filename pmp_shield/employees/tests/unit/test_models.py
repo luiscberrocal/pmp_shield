@@ -10,42 +10,11 @@ from django.db.utils import IntegrityError
 
 import logging
 
+from ..mock_objects import MockLDAPTool
 from ..factories import EmployeeFactory, UnitAssignmentFactory
 from ...models import OrganizationUnit, Phone, Employee, UnitAssignment
 
 logger = logging.getLogger(__name__)
-
-
-class MockLDAPTool(object):
-    def __init__(self):
-        self.ldap_data = {'jhuertas': [{'company_id': '8980986',
-                                        'first_name': 'Jacobo',
-                                        'last_name': 'Huertas',
-                                        'username': 'jhuertas',
-                                        'email': 'jhuertas@micanal.com',
-                                        'office': 'IAIT-TOP',
-                                        'phone': None}],
-                          'cont-vmurillo': [{'company_id': '',
-                                             'first_name': 'Victor',
-                                             'last_name': 'Murillo',
-                                             'username': 'cont-vmurillo',
-                                             'email': 'cont-vmurillo@micanal.com',
-                                             'office': None,
-                                             'phone': '200-4147'}],
-                          'lberrocal': [{'company_id': '1865325',
-                                         'first_name': 'Luis',
-                                         'last_name': 'Berrocal Cordoba',
-                                         'username': 'lberrocal',
-                                         'email': 'lberrocal@pancanal.com',
-                                         'office': 'TINO-NS',
-                                         'phone': '272-4149'}],
-                          }
-
-    def search_by_username(self, username):
-        result = self.ldap_data.get(username)
-        if result is None:
-            result = []
-        return result
 
 
 class TestOrganizationUnit(TestCase):

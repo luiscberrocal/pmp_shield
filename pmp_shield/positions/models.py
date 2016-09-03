@@ -22,6 +22,9 @@ class PositionDescription(TimeStampedModel):
     name = models.CharField(max_length=120)
     short_name = models.CharField(max_length=20, unique=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Position(TimeStampedModel):
     PERMANENT_TENURE = 'P'
@@ -47,8 +50,8 @@ class Position(TimeStampedModel):
 class PositionEmployeeAssignment(TimeStampedModel):
     employee = models.ForeignKey(Employee, related_name='position_assignments')
     position = models.ForeignKey(Position, related_name='position_assignments')
-    planned_start_date = models.DateField()
-    planned_end_date = models.DateField()
+    planned_start_date = models.DateField(null=True, blank=True)
+    planned_end_date = models.DateField(null=True, blank=True)
     actual_start_date = models.DateField(null=True, blank=True)
     actual_end_date = models.DateField(null=True, blank=True)
 

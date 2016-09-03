@@ -21,6 +21,5 @@ class TestPositionDescription(TestCase):
 
 
 class TestPosition(TestCase):
+    pass
 
-    def test_initial_data(self):
-        self.assertEqual(19, Position.objects.count())
