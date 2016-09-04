@@ -55,4 +55,20 @@ class PositionEmployeeAssignment(TimeStampedModel):
     actual_start_date = models.DateField(null=True, blank=True)
     actual_end_date = models.DateField(null=True, blank=True)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.position.tenure == Position.TEMPORARY_TENURE:
+            if self.planned_start_date is None or self.planned_end_date is None:
+                raise ValueError('Temporary position assignmentes require planned start and '
+                                 'end data. Assignment for %s to %s' % (self.employee, self.position))
+        if self.planned_end_date <= self.planned_start_date:
+            raise ValueError('Planned end date needs to be greater than start date.'
+                             'Assignment for %s to %s' % (self.employee, self.position))
+
+        super(PositionEmployeeAssignment, self).save(force_insert=force_insert,
+                                                     force_update=force_update,
+                                                     using=using, update_fields=update_fields)
+
+
+
 
