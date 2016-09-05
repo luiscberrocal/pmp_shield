@@ -16,6 +16,7 @@ ROOT_DIR = environ.Path(__file__) - 3  # (pmp_shield/config/settings/common.py -
 APPS_DIR = ROOT_DIR.path('pmp_shield')
 
 TEST_OUTPUT_PATH = ROOT_DIR.path('output').root
+TEST_DATA_PATH = ROOT_DIR.path('test_data').root
 
 env = environ.Env()
 
@@ -50,6 +51,7 @@ LOCAL_APPS = (
     'pmp_shield.projects',
     'pmp_shield.risks',
     'pmp_shield.goals',
+    'pmp_shield.positions',
     # Your stuff: custom apps go here
 )
 
@@ -333,6 +335,11 @@ LOGGING = {
             'propagate': True,
         },
         'pmp_shield.users': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'pmp_shield.positions': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
