@@ -7,11 +7,11 @@ from django.utils.translation import gettext_lazy as _
 from .models import Project, Assumption, Restriction, Milestone
 
 class OfficeFilter(SimpleListFilter):
-    title = _('office') # or use _('country') for translated title
-    parameter_name = 'office'
+    title = _('executing_office') # or use _('country') for translated title
+    parameter_name = 'executing_office'
 
     def lookups(self, request, model_admin):
-        offices = set([c.office for c in model_admin.model.objects.all()])
+        offices = set([c.executing_office for c in model_admin.model.objects.all()])
         if list(offices)[0] is None:
             return None
         else:
@@ -37,7 +37,7 @@ class MilestoneInline(admin.TabularInline):
 
 class ProjectAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'office', 'sponsor', 'project_manager')
+    list_display = ('name', 'executing_office', 'sponsor', 'project_manager')
     list_filter = (OfficeFilter,)
     inlines = [
         MilestoneInline,

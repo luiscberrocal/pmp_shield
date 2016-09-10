@@ -10,6 +10,7 @@ from django.db.utils import IntegrityError
 
 import logging
 
+from ..mock_objects import MockLDAPTool
 from ..factories import EmployeeFactory, UnitAssignmentFactory
 from ...models import OrganizationUnit, Phone, Employee, UnitAssignment
 
@@ -17,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestOrganizationUnit(TestCase):
-
     def test_load(self):
         op = OrganizationUnit.objects.get(short_name='OP')
         opt = OrganizationUnit.objects.get(short_name='OPT')
@@ -31,12 +31,13 @@ class TestOrganizationUnit(TestCase):
 
 
 class TestACPEmployee(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
         with open("./pmp_shield/employees/tests/fixtures/linux.jpeg", "rb") as imageFile:
             cls.photo_bytes = imageFile.read()
+
+        cls.mock_ldap = MockLDAPTool()
 
     def setUp(self):
         self.data = {'company_id': '1865325',
@@ -59,7 +60,6 @@ class TestACPEmployee(TestCase):
     def test_create_with_factory_batch(self):
         EmployeeFactory.create_batch(10)
         self.assertEqual(10, Employee.objects.count())
-
 
     def test_photo_load(self):
         employee = Employee.objects.create(**self.data)
@@ -94,8 +94,11 @@ class TestACPEmployee(TestCase):
         except ValueError as e:
             parts = str(e).split('.')
             self.assertEqual('Cannot start an assignment before previous one started', parts[0])
-            self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01', parts[1].strip())
-            self.assertEqual('Current: Unidad de Soluciones de Servicios Marítimos y Operacionales (TINO-SS), start date: 2016-09-01', parts[2].strip())
+            self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01',
+                             parts[1].strip())
+            self.assertEqual(
+                'Current: Unidad de Soluciones de Servicios Marítimos y Operacionales (TINO-SS), start date: 2016-09-01',
+                parts[2].strip())
 
     def test_assign_to_office_wrong_start_date_2(self):
         office = OrganizationUnit.objects.get(short_name='TINO-NS')
@@ -109,10 +112,10 @@ class TestACPEmployee(TestCase):
         except ValueError as e:
             parts = str(e).split('.')
             self.assertEqual('Cannot start an assignment before previous one started', parts[0])
-            self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01', parts[1].strip())
+            self.assertEqual('Previous: Unidad de Nuevas Soluciones (TINO-NS), start date: 2016-10-01',
+                             parts[1].strip())
             self.assertEqual('Current: Unidad de Soluciones de Servicios Marítimos'
                              ' y Operacionales (TINO-SS), start date: 2016-10-01', parts[2].strip())
-
 
     def test_assign_to_office_no_previous_assignment(self):
         employee = EmployeeFactory.create()
@@ -125,63 +128,46 @@ class TestACPEmployee(TestCase):
         current_assignment = UnitAssignment.objects.get_current_assignment(employee=employee)
         self.assertEqual(office, current_assignment.office)
 
-
-
     @mock.patch('requests.get')
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_create(self, mock_search_by_username, mock_get):
+    def test_get_or_create_from_username_create(self, mock_get):
         response = Mock()
         response.status_code = 200
         photo_bytes_array = bytearray(self.photo_bytes)
         expected_image = "data:image/jpg;base64,%s" % base64.b64encode(photo_bytes_array).decode('utf-8')
         response.content = photo_bytes_array
         mock_get.return_value = response
-        ldap_data = {'company_id': '1865325',
-                     'first_name': 'Luis',
-                     'last_name': 'Berrocal Cordoba',
-                     'username': 'lberrocal',
-                     'email': 'lberrocal@pancanal.com',
-                     'office': 'TINO-NS',
-                     'phone': '272-4149'}
-        mock_search_by_username.return_value = [ldap_data]
 
-        employee, created = Employee.objects.get_or_create_from_username('lberrocal')
-        self.assertEqual('Luis', employee.first_name)
-        self.assertEqual('Berrocal Cordoba', employee.last_name)
-        self.assertEqual('272-4149', employee.phones.first().phone_number)
-        self.assertEqual(1, Employee.objects.count())
-        self.assertEqual(expected_image, employee.photo_url)
-        self.assertTrue(created)
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            employee, created = Employee.objects.get_or_create_from_username('lberrocal')
+            self.assertEqual('Luis', employee.first_name)
+            self.assertEqual('Berrocal Cordoba', employee.last_name)
+            self.assertEqual('272-4149', employee.phones.first().phone_number)
+            self.assertEqual(1, Employee.objects.count())
+            self.assertEqual(expected_image, employee.photo_url)
+            self.assertTrue(created)
 
     @mock.patch('requests.get')
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_create_contractor(self, mock_search_by_username, mock_get):
+    def test_get_or_create_from_username_create_contractor(self, mock_get):
         response = Mock()
         response.status_code = 404
         mock_get.return_value = response
-        ldap_data = {'company_id': '',
-                     'first_name': 'Victor',
-                     'last_name': 'Murillo',
-                     'username': 'cont-vmurillo',
-                     'email': 'cont-vmurillo@pancanal.com',
-                     'office': None,
-                     'phone': '272-4147'}
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            employee, created = Employee.objects.get_or_create_from_username('cont-vmurillo')
+            self.assertEqual('Victor', employee.first_name)
+            self.assertEqual('Murillo', employee.last_name)
+            self.assertEqual('200-4147', employee.phones.first().phone_number)
+            self.assertEqual(1, Employee.objects.count())
+            self.assertEqual(None, employee.photo_url)
+            self.assertTrue(created)
 
-        mock_search_by_username.return_value = [ldap_data]
-        employee, created = Employee.objects.get_or_create_from_username('cont-vmurillo')
-        self.assertEqual('Victor', employee.first_name)
-        self.assertEqual('272-4147', employee.phones.first().phone_number)
-        self.assertEqual(1, Employee.objects.count())
-        self.assertEqual(None, employee.photo_url)
-        self.assertTrue(created)
-
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_no_username(self, mock_search_by_username):
-        mock_search_by_username.return_value = []
-
-        employee, created = Employee.objects.get_or_create_from_username('invaliduser')
-        self.assertIsNone(employee)
-        self.assertFalse(created)
+    def test_get_or_create_from_username_no_username(self):
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            employee, created = Employee.objects.get_or_create_from_username('invaliduser')
+            self.assertIsNone(employee)
+            self.assertFalse(created)
 
     @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
     def test_get_or_create_from_username_get(self, mock_search_by_username):
@@ -193,25 +179,17 @@ class TestACPEmployee(TestCase):
         self.assertEqual(1, Employee.objects.count())
         self.assertFalse(created)
 
-    @mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username')
-    def test_get_or_create_from_username_create_no_office(self, mock_search_by_username):
-        ldap_data = {'company_id': None,
-                     'first_name': 'Victor',
-                     'last_name': 'Murillo',
-                     'username': 'cont-vmurillo',
-                     'email': 'cont-vmurillo@pancanal.com',
-                     'office': 'IAIT-TOP',
-                     'phone': None}
-
-        mock_search_by_username.return_value = [ldap_data]
-        try:
-            employee, created = Employee.objects.get_or_create_from_username('jhuertas')
-            self.fail('IAIT-TOP has not been created')
-        except ValueError as e:
-            self.assertEqual('There is no office for letters "IAIT-TOP"', str(e))
+    def test_get_or_create_from_username_create_no_office(self):
+        with mock.patch('pmp_shield.employees.ldap_tools.LDAPTool.search_by_username',
+                        TestACPEmployee.mock_ldap.search_by_username):
+            try:
+                employee, created = Employee.objects.get_or_create_from_username('jhuertas')
+                self.fail('IAIT-TOP has not been created')
+            except ValueError as e:
+                self.assertEqual('There is no office for letters "IAIT-TOP"', str(e))
 
     def test_clean_invalid_company_id(self):
-        self.data['company_id']= '186'
+        self.data['company_id'] = '186'
         employee = Employee.objects.create(**self.data)
         try:
             employee.full_clean()
@@ -239,7 +217,6 @@ class TestACPEmployee(TestCase):
             msg = str(e).split('\n')[0]
             self.assertEqual('null value in column "company_id" violates not-null constraint', msg)
 
-
     def test_currently_assigned_to(self):
         ns = OrganizationUnit.objects.get(short_name='TINO-NS')
         ss = OrganizationUnit.objects.get(short_name='TINO-SS')
@@ -251,35 +228,12 @@ class TestACPEmployee(TestCase):
         self.assertEqual(5, UnitAssignment.objects.filter(office=ss, end_date__isnull=True).count())
 
         tino_ns_employees = Employee.objects.currently_assigned_to(ns)
-        self.assertEqual(10, UnitAssignment.objects.get_current_assignments_to(ns).only('employee__id').count())
-        self.assertEqual(10, Employee.objects.currently_assigned_to(ns).count())
+        self.assertEqual(10, tino_ns_employees.count())
         for ns_employee in tino_ns_employees:
             self.assertEqual('TINO-NS', UnitAssignment.objects.get_current_assignment(ns_employee).office.short_name)
 
-    def test_assigned_on_fiscal_year_to(self):
-        tino_ns_office = OrganizationUnit.objects.get(short_name='TINO-NS')
-        tino_ss_factory = OrganizationUnit.objects.get(short_name='TINO-SS')
-
-        start_date = datetime.date(2015, 10, 1)
-        end_date = start_date + datetime.timedelta(days=60)
-        # Create 3 Assignments for TINO-NS that start on FY16 and end on same fiscal year
-        UnitAssignmentFactory.create_batch(3, office=tino_ns_office, start_date=start_date, end_date=end_date)
-        # Create 3 Assignments for TINO-NS that start on FY16 and have not ended yet
-        UnitAssignmentFactory.create_batch(3, office=tino_ns_office, start_date=start_date)
-        # Create 5 Assignments for TINO-SS that start on FY16 and have not ended yet
-        UnitAssignmentFactory.create_batch(5, office=tino_ss_factory, start_date=start_date)
-        start_date = datetime.date(2015, 10, 1) - datetime.timedelta(days=90)
-        # Create 2 Assignments for TINO-NS that start on FY15 and have not ended yet
-        UnitAssignmentFactory.create_batch(2, office=tino_ns_office, start_date=start_date)
-        end_date = start_date + datetime.timedelta(days=60)
-        # Create 8 Assignments for TINO-NS that start on FY15 and end on FY15
-        UnitAssignmentFactory.create_batch(8, office=tino_ns_office, start_date=start_date, end_date=end_date)
-
-        self.assertEqual(8, Employee.objects.assigned_on_fiscal_year_to(2016, tino_ns_office).count())
-
 
 class TestUnitAssignment(TestCase):
-
     def test_create(self):
         assignment = UnitAssignmentFactory.create()
         self.assertEqual(1, UnitAssignment.objects.count())
@@ -290,7 +244,6 @@ class TestUnitAssignment(TestCase):
         start_date = datetime.date(2016, 10, 1)
         assignments_tino_ns = UnitAssignmentFactory.create_batch(10, office=ns, start_date=start_date)
         self.assertEqual(10, UnitAssignment.objects.get_current_assignments_to(ns).count())
-
 
     def test_get_current_assignment(self):
         office = OrganizationUnit.objects.get(short_name='TINO-NS')
@@ -304,14 +257,14 @@ class TestUnitAssignment(TestCase):
         start_date = end_date + datetime.timedelta(days=1)
         end_date = start_date + datetime.timedelta(days=60)
         UnitAssignmentFactory.create(office=new_office, employee=assignment.employee,
-                                     start_date=start_date, end_date= end_date)
+                                     start_date=start_date, end_date=end_date)
 
         start_date = end_date + datetime.timedelta(days=1)
         UnitAssignmentFactory.create(office=last_office, employee=assignment.employee, start_date=start_date)
 
         self.assertEqual(3, UnitAssignment.objects.filter(employee=assignment.employee).count())
-        self.assertEqual(last_office, UnitAssignment.objects.get_current_assignment(employee=assignment.employee).office)
-
+        self.assertEqual(last_office,
+                         UnitAssignment.objects.get_current_assignment(employee=assignment.employee).office)
 
     def test_get_fiscal_year_assignments_to_all_currently_assigned(self):
         office = OrganizationUnit.objects.get(short_name='TINO-NS')
@@ -323,24 +276,15 @@ class TestUnitAssignment(TestCase):
         UnitAssignmentFactory.create_batch(5, office=new_office, start_date=start_date)
         self.assertEqual(3, UnitAssignment.objects.get_fiscal_year_assignments_to(2016, office).count())
 
-
     def test_get_fiscal_year_assignments_to_all_currently_assigned_2(self):
         office = OrganizationUnit.objects.get(short_name='TINO-NS')
         new_office = OrganizationUnit.objects.get(short_name='TINO-SS')
         last_office = OrganizationUnit.objects.get(short_name='OPT')
 
-        start_date = datetime.date(2015, 10, 1)
+        start_date = datetime.date(2015, 10, 3)
         end_date = start_date + datetime.timedelta(days=60)
-        # Create 3 Assignments for ITNO-NS that start on FY16 and end on same fiscal year
         UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date, end_date=end_date)
-        # Create 3 Assignments for ITNO-NS that start on FY16 and have not ended yet
         UnitAssignmentFactory.create_batch(3, office=office, start_date=start_date)
-        # Create 5 Assignments for ITNO-SS that start on FY16 and have not ended yet
         UnitAssignmentFactory.create_batch(5, office=new_office, start_date=start_date)
         self.assertEqual(6, UnitAssignment.objects.get_fiscal_year_assignments_to(2016, office).count())
         self.assertEqual(0, UnitAssignment.objects.get_fiscal_year_assignments_to(2015, office).count())
-
-
-
-
-

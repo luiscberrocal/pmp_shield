@@ -31,6 +31,15 @@ class Goal(TimeStampedModel):
 
 class ExpectationsList(TimeStampedModel):
     version = models.IntegerField(default=1)
+    employee = models.ForeignKey(Employee, related_name='expectations_list')
+    delivery_date = models.DateField(null=True, blank=True)
+    fiscal_year = models.CharField(max_length=4,
+                                   validators=[RegexValidator(regex=r'^AF\d{2}$',
+                                                              message=_('Fiscal year must use format AFYY. '
+                                                                        'For example AF16 for fiscal year 2016'))])
+
+    class Meta:
+        unique_together = ('version', 'employee', 'fiscal_year')
 
 
 class EmployeeGoal(TimeStampedModel):
@@ -38,10 +47,6 @@ class EmployeeGoal(TimeStampedModel):
     goal = models.ForeignKey(Goal, related_name='employee_goals')
     expectations = models.TextField(null=True, blank=True)
     weight = models.FloatField(validators=[MaxValueValidator(1.0), MinValueValidator(0.0)])
-    fiscal_year = models.CharField(max_length=4,
-                                   validators=[RegexValidator(regex=r'^AF\d{2}$',
-                                                              message=_('Fiscal year must use format AFYY. '
-                                                                        'For example AF16 for fiscal year 2016'))])
     expectations_list = models.ForeignKey(ExpectationsList, related_name='employee_goals')
     history = AuditlogHistoryField()
 
