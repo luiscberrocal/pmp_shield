@@ -20,6 +20,7 @@ urlpatterns = [
 
                   url(r'^users/', include('pmp_shield.users.urls', namespace='users')),
                   url(r'^employees/', include('pmp_shield.employees.urls', namespace='employees')),
+                  url(r'^achievements/', include('pmp_shield.achievements.urls', namespace='achievements')),
 
                   # Your stuff: custom urls includes go here
 
