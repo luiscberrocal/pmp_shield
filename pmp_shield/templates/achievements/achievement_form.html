@@ -2,6 +2,7 @@
 {% load static %}{% load i18n %}
 
 {% block content %}
+    <h2> Emp: {{ form.initial.employee}} Fiscal Year {{ form.initial.fiscal_year }}</h2>
     {% if messages %}
         {% regroup messages|dictsort:"tags" by tags as message_list %}
 
@@ -22,7 +23,7 @@
     {% endif %}
 <form action="" method="post">
     {% csrf_token %}
-    {{ form.as_table }}
+    {{ form.as_p }}
     <input type="submit" value="Submit" />
 </form>
 {% endblock %}

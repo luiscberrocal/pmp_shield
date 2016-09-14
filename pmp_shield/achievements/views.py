@@ -1,4 +1,5 @@
 from braces.views import LoginRequiredMixin, UserFormKwargsMixin
+from django import forms
 from django.shortcuts import render
 
 # Create your views here.
@@ -22,6 +23,8 @@ class AchievementListView(LoginRequiredMixin, UserFormKwargsMixin, ListView):
 class AchievementCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
     model = Achievement
     form_class = AchievementForm
+    context_object_name = 'achievement'
+    success_url = '/'
 
     def get_initial(self):
         employee = employee_selection_util.get_current_employee(self.request)
