@@ -122,3 +122,13 @@ class UnitAssignment(TimeStampedModel):
 
     objects = UnitAssignmentManager()
 
+    def _get_age(self):
+        if self.end_date is None:
+            end_date = timezone.now().date()
+        else:
+            end_date = self.end_date
+        delta = end_date - self.start_date
+        return delta.days
+    age = property(_get_age)
+
+

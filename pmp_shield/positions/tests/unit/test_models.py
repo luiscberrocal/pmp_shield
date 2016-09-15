@@ -1,6 +1,7 @@
 from datetime import date
 from django.test import TestCase
 
+from pmp_shield.employees.models import OrganizationUnit
 from pmp_shield.employees.tests.factories import EmployeeFactory
 from ...models import GradeLevel, PositionDescription, Position, PositionEmployeeAssignment
 from ..factories import GradeLevelFactory, PositionFactory
@@ -27,6 +28,13 @@ class TestPosition(TestCase):
     def test_create(self):
         PositionFactory.create()
         self.assertEqual(1, Position.objects.count())
+
+    def test_create_temporary(self):
+        tino_ns = OrganizationUnit.objects.get(slug='tino-ns')
+        position = PositionFactory.create_temporary_position(current_office=tino_ns)
+        self.assertEqual(position.tenure, Position.TEMPORARY_TENURE)
+        self.assertIsNone(position.current_owner)
+        self.assertEqual(tino_ns.slug, position.current_office.slug)
 
 
 class TestPositionAssignment(TestCase):
