@@ -2,7 +2,7 @@
 {% load static %}{% load i18n %}
 
 {% block content %}
-    <h2> Emp: {{ form.initial.employee}} Fiscal Year {{ form.initial.fiscal_year }}</h2>
+    <h2> Employee: {{ form.initial.employee}} Fiscal Year {{ form.initial.fiscal_year }}</h2>
     {% if messages %}
         {% regroup messages|dictsort:"tags" by tags as message_list %}
 
