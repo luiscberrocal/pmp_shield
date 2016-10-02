@@ -34,4 +34,9 @@ class PositionFactory(DjangoModelFactory):
     current_owner = SubFactory(EmployeeFactory)
     current_office = Iterator(OrganizationUnit.objects.filter(parent__isnull=True))
 
+    @classmethod
+    def create_temporary_position(cls, **kwargs):
+        return PositionFactory.create(tenure=Position.TEMPORARY_TENURE, current_owner=None, **kwargs)
+
+
 

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}{% load i18n %}
+
+{% block content %}
+    <h2> Employee: {{ form.initial.employee}} Fiscal Year {{ form.initial.fiscal_year }}</h2>
+    {% if messages %}
+        {% regroup messages|dictsort:"tags" by tags as message_list %}
+
+        {% for tags in message_list %}
+            <div class="alert alert-{{ tags.grouper }}">
+                <div class="container">
+                    <ul>
+                        {% for message in tags.list %}
+                            <li>
+                                {{ message }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit" />
+</form>
+{% endblock %}

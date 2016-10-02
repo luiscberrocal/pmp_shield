@@ -74,3 +74,5 @@ class UnitAssignmentManager(Manager):
         condition4 = Q(office=office, start_date__gte=fiscal_year.start_date,
                        end_date__range=(fiscal_year.start_date, fiscal_year.end_date))
         return self.filter(condition1|condition2|condition3|condition4)
+
+

@@ -52,6 +52,7 @@ LOCAL_APPS = (
     'pmp_shield.risks',
     'pmp_shield.goals',
     'pmp_shield.positions',
+    'pmp_shield.achievements',
     # Your stuff: custom apps go here
 )
 
@@ -69,6 +70,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
+    'pmp_shield.employees.middlewares.AutoSelectEmployeeMiddleware',
 )
 
 # MIGRATIONS CONFIGURATION
