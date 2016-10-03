@@ -16,6 +16,7 @@ ROOT_DIR = environ.Path(__file__) - 3  # (pmp_shield/config/settings/common.py -
 APPS_DIR = ROOT_DIR.path('pmp_shield')
 
 TEST_OUTPUT_PATH = ROOT_DIR.path('output').root
+TEST_DATA_PATH = ROOT_DIR.path('test_data').root
 
 env = environ.Env()
 
@@ -38,12 +39,20 @@ DJANGO_APPS = (
 )
 THIRD_PARTY_APPS = (
     'crispy_forms',  # Form layouts
+    'auditlog',
+    'acp_calendar',
 )
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
     # custom users app
     'pmp_shield.users.apps.UsersConfig',
+    'pmp_shield.employees',
+    'pmp_shield.projects',
+    'pmp_shield.risks',
+    'pmp_shield.goals',
+    'pmp_shield.positions',
+    'pmp_shield.achievements',
     # Your stuff: custom apps go here
 )
 
@@ -60,6 +69,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
+    'pmp_shield.employees.middlewares.AutoSelectEmployeeMiddleware',
 )
 
 # MIGRATIONS CONFIGURATION
@@ -220,7 +231,7 @@ ACCOUNT_ALLOW_REGISTRATION = False  # env.bool('DJANGO_ACCOUNT_ALLOW_REGISTRATIO
 # Select the correct user model
 AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = 'users:redirect'
-LOGIN_URL = 'account_login'
+LOGIN_URL = 'login'
 
 # SLUGLIFIER
 
@@ -248,7 +259,7 @@ ADMIN_URL = r'^admin/'
 
 LDAP_SERVERS = [
     {
-        'host': env('LDAP_HOST',default='<<LDAP_HOST>>'),
+        'host': env('LDAP_HOST'),
         'port': 389,
         'use_ssl': False,
     },
@@ -330,6 +341,13 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'pmp_shield.positions': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     }
 }
 ########## END LOGGING CONFIGURATION
+
+HR_PHOTO_URL = 'http://10.1.92.213:18134/ords/vtmsapi/employee/%s/photo/'

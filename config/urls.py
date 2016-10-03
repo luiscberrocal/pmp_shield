@@ -12,24 +12,19 @@ urlpatterns = [
                   url(r'^$', TemplateView.as_view(template_name='pages/home.html'), name='home'),
                   url(r'^about/$', TemplateView.as_view(template_name='pages/about.html'), name='about'),
 
-                   # Use {% url 'admin:index' %}
+                  # Use {% url 'admin:index' %}
                   url(settings.ADMIN_URL, include(admin.site.urls)),
                   url('^accounts/', include('django.contrib.auth.urls')),
                   # User management
                   # Your stuff: custom urls includes go here
 
-    url(r'^users/', include('pmp_shield.users.urls', namespace='users')),
+                  url(r'^users/', include('pmp_shield.users.urls', namespace='users')),
+                  url(r'^employees/', include('pmp_shield.employees.urls', namespace='employees')),
+                  url(r'^achievements/', include('pmp_shield.achievements.urls', namespace='achievements')),
 
-    # Your stuff: custom urls includes go here
+                  # Your stuff: custom urls includes go here
 
-
-
-
-
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
