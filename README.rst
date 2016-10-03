@@ -7,6 +7,8 @@ PMP Tools for project administration
      :target: https://github.com/pydanny/cookiecutter-django/
      :alt: Built with Cookiecutter Django
 
+.. image:: https://travis-ci.org/luiscberrocal/pmp_shield.svg?branch=master
+    :target: https://travis-ci.org/luiscberrocal/pmp_shield
 
 LICENSE: MIT
 

@@ -3,9 +3,9 @@ from datetime import date, timedelta, datetime
 from auditlog.models import LogEntry
 from django.test import TestCase
 
-from ...risks.models import Risk
-from ..models import Project, Assumption, Restriction, Milestone, ProjectMembership
-from .factories import ProjectFactory, RestrictionFactory, MilestoneFactory
+from ....risks.models import Risk
+from ....projects.models import Project, Assumption, Restriction, Milestone, ProjectMembership
+from ....projects.tests.factories import ProjectFactory, RestrictionFactory, MilestoneFactory
 
 
 class TestProject(TestCase):

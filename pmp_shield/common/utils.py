@@ -12,6 +12,8 @@ __author__ = 'lberrocal'
 
 
 def create_output_filename_with_date(filename):
+    if not os.path.exists(settings.TEST_OUTPUT_PATH):
+        os.makedirs(settings.TEST_OUTPUT_PATH)
     return add_date_to_filename(os.path.join(settings.TEST_OUTPUT_PATH, filename))
 
 def add_date_to_filename(filename, **kwargs):
