@@ -1,7 +1,7 @@
 from django.test import TestCase
 
-from ..models import Risk
-from .factories import RiskFactory
+from ...models import Risk
+from ..factories import RiskFactory
 
 
 class TestRisk(TestCase):
