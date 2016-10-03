@@ -1,7 +1,6 @@
 import os
 import sys
 
-import django
 from django.conf import settings
 from django.test.utils import get_runner
 
@@ -18,7 +17,13 @@ def run_tests(*test_args):
                      'pmp_shield.users.tests',
                      ]
     os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings.test'
-    django.setup()
+    try:
+        import django
+        setup = django.setup
+    except AttributeError:
+        pass
+    else:
+        setup()
     # Run tests
     TestRunner = get_runner(settings)
     test_runner = TestRunner()

@@ -67,3 +67,4 @@ pmp_shield/media/
 # Hitch directory
 tests/.hitch
 
+~$*.xlsx
