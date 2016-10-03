@@ -1,4 +1,8 @@
 sudo: true
+env:
+  - DJANGO_VERSION=1.9.10
+  - DJANGO_VERSION=1.10.1
+
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq build-essential gettext python-dev zlib1g-dev libpq-dev xvfb
@@ -6,7 +10,25 @@ before_install:
   - sudo apt-get install -qq graphviz-dev python-setuptools python3-dev python-virtualenv python-pip
   - sudo apt-get install -qq firefox automake libtool libreadline6 libreadline6-dev libreadline-dev
   - sudo apt-get install -qq libsqlite3-dev libxml2 libxml2-dev libssl-dev libbz2-dev wget curl llvm
-language: python
-python:
-- "3.5"
 
+language: python
+
+python:
+  - "3.5"
+  - "3.4"
+
+before_install:
+  - pip install codecov
+  - pip install coveralls
+
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+install:
+  - pip install -r requirements/test.txt
+  - pip install -q Django==$DJANGO_VERSION
+
+# command to run tests using coverage, e.g. python setup.py test
+script: coverage run manage.py tests
+
+after_success:
+  - codecov
+  - coveralls
