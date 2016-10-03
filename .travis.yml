@@ -27,7 +27,7 @@ install:
   - pip install -q Django==$DJANGO_VERSION
 
 # command to run tests using coverage, e.g. python setup.py test
-script: coverage run manage.py tests --settings=config.settings.test
+script: coverage run manage.py test --settings=config.settings.test
 
 after_success:
   - codecov
