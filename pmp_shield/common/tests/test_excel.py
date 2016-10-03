@@ -3,7 +3,7 @@ from openpyxl import Workbook
 import os
 from ..excel import ExcelAdapter
 from django.conf import settings
-from ..utils import  add_date_to_filename
+from ..utils import  add_date_to_filename, create_output_filename_with_date
 from faker import Factory as FakerFactory
 
 faker = FakerFactory.create()
@@ -13,7 +13,7 @@ class TestExcelAdapter(TestCase):
     clean_output = True
 
     def setUp(self):
-        self.filename = add_date_to_filename(os.path.join(getattr(settings, 'TEST_OUTPUT_PATH'), 'excel_test_.xlsx'))
+        self.filename = create_output_filename_with_date('excel_test_.xlsx')
         wb = Workbook()
         sheet = wb.active
         self.sheet_name ='My New Sheet'
